@@ -49,8 +49,13 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
+            justify-content: space-between; /* 标题栏内容两端对齐 */
             border-radius: 16px;
             margin-bottom: 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
         }
         .header-icon {
             width: 20px;
@@ -62,6 +67,27 @@
         .header-text {
             font-size: 16px;
             font-weight: 500;
+        }
+        /* 标题栏右侧按钮容器 */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px; /* 按钮间距 */
+        }
+        /* 音乐控制按钮和设置按钮样式 */
+        .header-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .header-btn:hover {
+            background-color: rgba(0, 0, 0, 0.1);
         }
         .profile {
             display: flex;
@@ -143,7 +169,7 @@
             }
         }
         /* 弹窗背景改为透明黑色 */
-        .social-detail, .resource-detail, .contact-detail, .fun-detail {
+        .social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail {
             position: fixed;
             top: 0;
             left: 0;
@@ -158,11 +184,11 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .social-detail.active, .resource-detail.active, .contact-detail.active, .fun-detail.active {
+        .social-detail.active, .resource-detail.active, .contact-detail.active, .fun-detail.active, .setting-detail.active {
             opacity: 1;
             visibility: visible;
         }
-        .social-panel, .resource-panel, .contact-panel, .fun-panel {
+        .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel {
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 16px;
@@ -174,7 +200,7 @@
             opacity: 0;
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
-        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel {
+        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel, .setting-detail.active .setting-panel {
             transform: translateY(0);
             opacity: 1;
         }
@@ -213,6 +239,28 @@
         .panel-content {
             padding: 16px;
             background-color: #e3f2fd;
+        }
+        /* 设置面板内容样式 */
+        .setting-content {
+            padding: 20px 16px;
+            background-color: #e3f2fd;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        .setting-label {
+            font-size: 16px;
+            color: #212121;
         }
         /* 恢复原有列表样式，确保排序不变 */
         .social-item, .resource-item {
@@ -281,18 +329,110 @@
                 opacity: 0;
             }
         }
+        /* 深色模式全局样式 */
+        body.dark-mode {
+            background-image: url("beijing.png"); /* 保留原背景图，调整叠加色 */
+            background-color: rgba(17, 24, 39, 0.95); /* 深色背景叠加 */
+            color: #f3f4f6;
+        }
+        body.dark-mode .container {
+            background-color: rgba(31, 41, 55, 0.9);
+        }
+        body.dark-mode .header {
+            background-color: #1f2937;
+        }
+        body.dark-mode .header-text {
+            color: #f3f4f6;
+        }
+        body.dark-mode .button-container {
+            background-color: #374151;
+        }
+        body.dark-mode .btn-white {
+            background-color: #4b5563;
+            color: #f3f4f6;
+            border-color: #6b7280;
+        }
+        body.dark-mode .btn-white:hover {
+            background-color: #6b7280;
+        }
+        body.dark-mode .panel-content,
+        body.dark-mode .setting-content {
+            background-color: #374151;
+        }
+        body.dark-mode .social-name,
+        body.dark-mode .resource-name,
+        body.dark-mode .fun-name,
+        body.dark-mode .setting-label {
+            color: #f3f4f6;
+        }
+        body.dark-mode .social-id,
+        body.dark-mode .profile-english-name {
+            color: #d1d5db;
+        }
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #6b7280;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #0277bd;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
     </style>
 </head>
 <body>
-    <!-- 音频播放标签，页面加载时自动播放 -->
-    <audio src="Music.mp3" autoplay loop>
+    <!-- 音频播放标签，默认不自动播放（根据本地存储判断） -->
+    <audio id="backgroundMusic" src="Music.mp3" loop>
         您的浏览器不支持音频播放，请升级浏览器。
     </audio>
 
     <div class="container">
         <div class="header">
-            <img src="icon.png" alt="网站图标" class="header-icon">
-            <div class="header-text">小源的网站</div>
+            <div class="header-left">
+                <img src="icon.png" alt="网站图标" class="header-icon">
+                <div class="header-text">小源的网站</div>
+            </div>
+            <div class="header-right">
+                <!-- 音乐控制按钮（无文字提示） -->
+                <button class="header-btn" id="musicBtn" onclick="toggleMusic()">
+                    <img src="sy1.png" width="24" height="24">
+                </button>
+                <!-- 设置按钮（无文字提示） -->
+                <button class="header-btn" id="settingBtn" onclick="openPanel('setting')">
+                    <img src="shezhi.png" width="24" height="24">
+                </button>
+            </div>
         </div>
         <div class="profile">
             <img src="touxiang.png" alt="小源的头像" class="profile-avatar">
@@ -378,9 +518,151 @@
             </div>
         </div>
     </div>
+    <!-- 设置面板 -->
+    <div class="setting-detail" id="settingDetail">
+        <div class="setting-panel">
+            <div class="panel-header">
+                <div class="panel-title">设置</div>
+                <div class="close-btn" onclick="hidePanel('settingDetail')"></div>
+            </div>
+            <div class="setting-content">
+                <div class="setting-item">
+                    <span class="setting-label">深色模式</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="resetDarkModeToSystem()">默认</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">清除音乐记录</span>
+                    <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="clearMusicStorage()">清除</button>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">关于网站</span>
+                    <div class="arrow-right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
+        // 深色模式相关变量
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const DARK_MODE_KEY = 'darkModeSetting'; // 本地存储键名
+        const SYSTEM_DEFAULT = 'system';
+        const DARK_MODE = 'dark';
+        const LIGHT_MODE = 'light';
+
         let selectedBtn = null;
         let isPanelOpen = false;
+        // 音乐元素和状态
+        const musicElement = document.getElementById('backgroundMusic');
+        const musicBtnImg = document.getElementById('musicBtn').querySelector('img');
+
+        // 初始化页面（音乐+深色模式）
+        window.onload = function() {
+            // 初始化音乐状态
+            const musicState = localStorage.getItem('musicState');
+            if (musicState === 'playing') {
+                musicElement.play().catch(err => setMusicPaused());
+                setMusicPlaying();
+            } else {
+                setMusicPaused();
+            }
+
+            // 初始化深色模式
+            initDarkMode();
+        };
+
+        // 初始化深色模式（优先本地存储 → 系统设置）
+        function initDarkMode() {
+            const savedSetting = localStorage.getItem(DARK_MODE_KEY);
+            const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedSetting === DARK_MODE) {
+                enableDarkMode();
+                darkModeToggle.checked = true;
+            } else if (savedSetting === LIGHT_MODE) {
+                disableDarkMode();
+                darkModeToggle.checked = false;
+            } else {
+                // 系统默认：跟随系统设置
+                if (systemIsDark) {
+                    enableDarkMode();
+                    darkModeToggle.checked = true;
+                } else {
+                    disableDarkMode();
+                    darkModeToggle.checked = false;
+                }
+            }
+        }
+
+        // 启用深色模式
+        function enableDarkMode() {
+            document.body.classList.add('dark-mode');
+        }
+
+        // 禁用深色模式（浅色模式）
+        function disableDarkMode() {
+            document.body.classList.remove('dark-mode');
+        }
+
+        // 切换深色/浅色模式
+        function toggleDarkMode() {
+            const isDark = document.body.classList.contains('dark-mode');
+            if (isDark) {
+                disableDarkMode();
+                localStorage.setItem(DARK_MODE_KEY, LIGHT_MODE);
+            } else {
+                enableDarkMode();
+                localStorage.setItem(DARK_MODE_KEY, DARK_MODE);
+            }
+        }
+
+        // 重置为系统默认深浅色模式
+        function resetDarkModeToSystem() {
+            localStorage.removeItem(DARK_MODE_KEY);
+            initDarkMode(); // 重新初始化，跟随系统
+            alert('已恢复为系统默认模式');
+        }
+
+        // 切换音乐播放/暂停
+        function toggleMusic() {
+            if (musicElement.paused) {
+                musicElement.play().then(() => {
+                    setMusicPlaying();
+                }).catch(err => {
+                    alert('浏览器限制自动播放，请手动授权或刷新页面后重试');
+                });
+            } else {
+                musicElement.pause();
+                setMusicPaused();
+            }
+        }
+
+        // 设置音乐播放状态
+        function setMusicPlaying() {
+            musicBtnImg.src = 'sy2.png';
+            localStorage.setItem('musicState', 'playing');
+        }
+
+        // 设置音乐暂停状态
+        function setMusicPaused() {
+            musicElement.pause();
+            musicBtnImg.src = 'sy1.png';
+            localStorage.setItem('musicState', 'paused');
+        }
+
+        // 清除音乐本地存储记录
+        function clearMusicStorage() {
+            localStorage.removeItem('musicState');
+            setMusicPaused();
+            alert('音乐记录已清除');
+        }
+
+        // 按钮点击处理
         function btnClickHandle(event) {
             const currentBtn = event.currentTarget;
             const btnType = currentBtn.dataset.type;
@@ -398,6 +680,8 @@
                 selectedBtn = currentBtn;
             }
         }
+
+        // 打开面板
         function openPanel(type) {
             let panelId = '';
             switch(type) {
@@ -413,37 +697,54 @@
                 case 'contact':
                     panelId = 'contactDetail';
                     break;
+                case 'setting':
+                    panelId = 'settingDetail';
+                    break;
             }
             document.getElementById(panelId).classList.add('active');
         }
+
+        // 隐藏面板
         function hidePanel(panelId) {
             document.getElementById(panelId).classList.remove('active');
             isPanelOpen = false;
         }
+
+        // 关闭所有面板
         function closeAllPanels() {
-            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail').forEach(panel => {
+            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
                 panel.classList.remove('active');
             });
         }
+
+        // 取消所有按钮选中状态
         function cancelAllSelected() {
             document.querySelectorAll('.btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
             selectedBtn = null;
         }
+
+        // 点击空白处关闭面板
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel')) {
+            if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.header-btn')) {
                 cancelAllSelected();
                 closeAllPanels();
                 isPanelOpen = false;
             }
         });
+
+        // 打开快手主页
         function openKuaishouProfile() {
             window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
         }
+
+        // 打开资源链接
         function openResourceLink(url) {
             window.open(url, '_blank', 'noopener noreferrer');
         }
+
+        // 点击动画效果
         document.addEventListener('click', function(event) {
             const circle = document.createElement('div');
             circle.classList.add('click-circle');
@@ -453,6 +754,8 @@
             circle.classList.add('animate');
             setTimeout(() => circle.remove(), 1000);
         });
+
+        // 绑定按钮点击事件
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', btnClickHandle);
         });
