@@ -8,13 +8,22 @@
     <link rel="shortcut icon" href="icon.png" type="image/png">
     
     <style>
+        /* 引入Minecraft字体 */
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('Minecraft.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
         body {
             background-image: url("beijing.png");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* 应用Minecraft字体 */
+            font-family: 'Minecraft', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -22,7 +31,6 @@
             align-items: center;
             min-height: 100vh;
         }
-
         .container {
             width: 100%;
             max-width: 400px;
@@ -34,7 +42,6 @@
             flex-direction: column;
             align-items: center;
         }
-
         .header {
             background-color: #f8f9fa;
             width: 100%;
@@ -75,7 +82,13 @@
         .profile-name {
             font-size: 20px;
             color: #0277bd;
-            margin-bottom: 16px;
+            margin-bottom: 4px; /* 缩小与下方英文的间距 */
+        }
+        /* 新增英文名称样式 */
+        .profile-english-name {
+            font-size: 10px; /* 原20px的50% */
+            color: #000; /* 黑色文本 */
+            margin-bottom: 16px; /* 保持与按钮容器的原有间距 */
         }
         .button-container {
             background-color: #fff;
@@ -129,13 +142,14 @@
                 max-width: 240px;
             }
         }
-        .social-detail, .resource-detail, .contact-detail {
+        /* 弹窗背景改为透明黑色 */
+        .social-detail, .resource-detail, .contact-detail, .fun-detail {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(227, 242, 253, 0.95);
+            background-color: rgba(0, 0, 0, 0.7); /* 透明黑色 */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -144,11 +158,11 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .social-detail.active, .resource-detail.active, .contact-detail.active {
+        .social-detail.active, .resource-detail.active, .contact-detail.active, .fun-detail.active {
             opacity: 1;
             visibility: visible;
         }
-        .social-panel, .resource-panel, .contact-panel {
+        .social-panel, .resource-panel, .contact-panel, .fun-panel {
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 16px;
@@ -160,7 +174,7 @@
             opacity: 0;
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
-        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel {
+        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel {
             transform: translateY(0);
             opacity: 1;
         }
@@ -200,6 +214,7 @@
             padding: 16px;
             background-color: #e3f2fd;
         }
+        /* 恢复原有列表样式，确保排序不变 */
         .social-item, .resource-item {
             display: flex;
             align-items: center;
@@ -269,6 +284,11 @@
     </style>
 </head>
 <body>
+    <!-- 音频播放标签，页面加载时自动播放 -->
+    <audio src="Music.mp3" autoplay loop>
+        您的浏览器不支持音频播放，请升级浏览器。
+    </audio>
+
     <div class="container">
         <div class="header">
             <img src="icon.png" alt="网站图标" class="header-icon">
@@ -277,14 +297,18 @@
         <div class="profile">
             <img src="touxiang.png" alt="小源的头像" class="profile-avatar">
             <div class="profile-name">小源呀</div>
+            <!-- 新增英文名称文本 -->
+            <div class="profile-english-name">Xiaoyuan</div>
             <div class="button-container">
+                <!-- 保持原有按钮排序：社交平台 → 分享资源 → 好玩的 → 联系方式 -->
                 <button class="btn btn-blue" data-type="social">社交平台</button>
                 <button class="btn btn-blue" data-type="resource">分享资源</button>
+                <button class="btn btn-blue" data-type="fun">好玩的</button>
                 <button class="btn btn-white" data-type="contact">联系方式</button>
             </div>
         </div>
     </div>
-    <!-- 社交平台详情面板 -->
+    <!-- 社交平台详情面板（排序不变） -->
     <div class="social-detail" id="socialDetail">
         <div class="social-panel">
             <div class="panel-header">
@@ -292,7 +316,6 @@
                 <div class="close-btn" onclick="hidePanel('socialDetail')"></div>
             </div>
             <div class="panel-content">
-                <!-- 快手图标：主目录下的ks.png -->
                 <div class="social-item" onclick="openKuaishouProfile()">
                     <img src="ks.png" alt="快手图标" class="social-avatar">
                     <div>
@@ -304,7 +327,7 @@
             </div>
         </div>
     </div>
-    <!-- 分享资源详情面板 -->
+    <!-- 分享资源详情面板（排序不变） -->
     <div class="resource-detail" id="resourceDetail">
         <div class="resource-panel">
             <div class="panel-header">
@@ -312,19 +335,17 @@
                 <div class="close-btn" onclick="hidePanel('resourceDetail')"></div>
             </div>
             <div class="panel-content">
-                <!-- 软件分享图标：主目录下的sy.png -->
+                <!-- 保持原有资源排序：软件分享 → mc模组 → 所有资源 -->
                 <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-ijSj3')">
                     <img src="sy.png" alt="软件分享图标" class="resource-icon">
                     <div class="resource-name">软件分享</div>
                     <div class="arrow-right"></div>
                 </div>
-                <!-- Mc模组图标：主目录下的mc.png -->
                 <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-qjSj3')">
                     <img src="mc.png" alt="Mc模组图标" class="resource-icon">
                     <div class="resource-name">mc模组</div>
                     <div class="arrow-right"></div>
                 </div>
-                <!-- 所有资源图标：主目录下的yy.png -->
                 <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-5jSj3')">
                     <img src="yy.png" alt="所有资源图标" class="resource-icon">
                     <div class="resource-name">所有资源</div>
@@ -333,7 +354,19 @@
             </div>
         </div>
     </div>
-    <!-- 联系方式详情面板 -->
+    <!-- 好玩的详情面板 -->
+    <div class="fun-detail" id="funDetail">
+        <div class="fun-panel">
+            <div class="panel-header">
+                <div class="panel-title">好玩的</div>
+                <div class="close-btn" onclick="hidePanel('funDetail')"></div>
+            </div>
+            <div class="panel-content" style="text-align: center; padding: 30px 0;">
+                <p style="font-size: 18px; color: #212121; margin: 0;">暂时还没有</p>
+            </div>
+        </div>
+    </div>
+    <!-- 联系方式详情面板（内容不变） -->
     <div class="contact-detail" id="contactDetail">
         <div class="contact-panel">
             <div class="panel-header">
@@ -341,24 +374,21 @@
                 <div class="close-btn" onclick="hidePanel('contactDetail')"></div>
             </div>
             <div class="panel-content">
-                <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: ×114514-9178@outlook.com 联系</p>
+                <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: x114514-9178@outlook.com 联系</p>
             </div>
         </div>
     </div>
     <script>
         let selectedBtn = null;
         let isPanelOpen = false;
-
         function btnClickHandle(event) {
             const currentBtn = event.currentTarget;
             const btnType = currentBtn.dataset.type;
-
             if (isPanelOpen) {
                 closeAllPanels();
                 isPanelOpen = false;
                 return;
             }
-
             if (selectedBtn === currentBtn) {
                 openPanel(btnType);
                 isPanelOpen = true;
@@ -368,7 +398,6 @@
                 selectedBtn = currentBtn;
             }
         }
-
         function openPanel(type) {
             let panelId = '';
             switch(type) {
@@ -378,47 +407,43 @@
                 case 'resource':
                     panelId = 'resourceDetail';
                     break;
+                case 'fun':
+                    panelId = 'funDetail';
+                    break;
                 case 'contact':
                     panelId = 'contactDetail';
                     break;
             }
             document.getElementById(panelId).classList.add('active');
         }
-
         function hidePanel(panelId) {
             document.getElementById(panelId).classList.remove('active');
             isPanelOpen = false;
         }
-
         function closeAllPanels() {
-            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail').forEach(panel => {
+            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail').forEach(panel => {
                 panel.classList.remove('active');
             });
         }
-
         function cancelAllSelected() {
             document.querySelectorAll('.btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
             selectedBtn = null;
         }
-
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel')) {
+            if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel')) {
                 cancelAllSelected();
                 closeAllPanels();
                 isPanelOpen = false;
             }
         });
-
         function openKuaishouProfile() {
             window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
         }
-
         function openResourceLink(url) {
             window.open(url, '_blank', 'noopener noreferrer');
         }
-
         document.addEventListener('click', function(event) {
             const circle = document.createElement('div');
             circle.classList.add('click-circle');
@@ -428,7 +453,6 @@
             circle.classList.add('animate');
             setTimeout(() => circle.remove(), 1000);
         });
-
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', btnClickHandle);
         });
