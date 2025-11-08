@@ -22,7 +22,6 @@
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            /* 应用Minecraft字体 */
             font-family: 'Minecraft', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
@@ -30,6 +29,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            touch-action: none; /* 禁用默认触摸行为 */
         }
         .container {
             width: 100%;
@@ -41,6 +41,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            z-index: 100;
         }
         .header {
             background-color: #f8f9fa;
@@ -49,7 +50,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
-            justify-content: space-between; /* 标题栏内容两端对齐 */
+            justify-content: space-between;
             border-radius: 16px;
             margin-bottom: 20px;
         }
@@ -68,13 +69,11 @@
             font-size: 16px;
             font-weight: 500;
         }
-        /* 标题栏右侧按钮容器 */
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px; /* 按钮间距 */
+            gap: 12px;
         }
-        /* 音乐控制按钮和设置按钮样式 - 新增染色逻辑 */
         .header-btn {
             width: 24px;
             height: 24px;
@@ -89,7 +88,6 @@
             width: 24px;
             height: 24px;
             object-fit: cover;
-            /* 默认黑色染色（浅色模式） */
             filter: invert(0) grayscale(100%) brightness(0);
         }
         .header-btn:hover {
@@ -114,13 +112,12 @@
         .profile-name {
             font-size: 20px;
             color: #0277bd;
-            margin-bottom: 4px; /* 缩小与下方英文的间距 */
+            margin-bottom: 4px;
         }
-        /* 新增英文名称样式 */
         .profile-english-name {
-            font-size: 10px; /* 原20px的50% */
-            color: #000; /* 黑色文本 */
-            margin-bottom: 16px; /* 保持与按钮容器的原有间距 */
+            font-size: 10px;
+            color: #000;
+            margin-bottom: 16px;
         }
         .button-container {
             background-color: #fff;
@@ -149,7 +146,7 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         .btn.selected {
-            box-shadow: 0 0 0 2px #ff69b4, 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 0 2px #ff69b4, 0 2px 8px rgba(0, 0, 0, 0.2); /* 粉色选择框 */
         }
         .btn-blue {
             background-color: #0277bd;
@@ -173,15 +170,19 @@
             .button-container {
                 max-width: 240px;
             }
+            .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel, .blank-popup-panel {
+                width: 90%;
+                max-width: 280px;
+            }
         }
-        /* 弹窗背景改为透明黑色 */
-        .social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail {
+        /* 弹窗基础样式 - 新增四边缩放热区 */
+        .social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail, .blank-popup-detail {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* 透明黑色 */
+            background-color: transparent;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -189,27 +190,98 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
         }
-        .social-detail.active, .resource-detail.active, .contact-detail.active, .fun-detail.active, .setting-detail.active {
+        .social-detail.active, .resource-detail.active, .contact-detail.active, .fun-detail.active, .setting-detail.active, .blank-popup-detail.active {
             opacity: 1;
             visibility: visible;
         }
-        .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel {
+        .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel, .blank-popup-panel {
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 16px;
-            width: 80%;
-            max-width: 300px;
+            width: 80%; /* 默认宽度 */
+            max-width: 300px; /* 默认最大宽度 */
+            min-width: 250px; /* 最小宽度限制（不能调太小） */
+            min-height: 180px; /* 最小高度限制（不能调太小） */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             overflow: hidden;
             transform: translateY(20px);
             opacity: 0;
             transition: transform 0.3s ease, opacity 0.3s ease;
+            position: absolute;
+            pointer-events: auto;
+            cursor: default;
+            /* 缩放热区尺寸 - 容错率10px */
+            --resize-edge-size: 10px;
         }
-        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel, .setting-detail.active .setting-panel {
+        /* 四边缩放热区样式 */
+        .window-resize-edge {
+            position: absolute;
+            z-index: 10;
+            touch-action: none;
+        }
+        .window-resize-edge.left {
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: var(--resize-edge-size);
+            cursor: ew-resize; /* 水平缩放指针 */
+        }
+        .window-resize-edge.right {
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: var(--resize-edge-size);
+            cursor: ew-resize; /* 水平缩放指针 */
+        }
+        .window-resize-edge.top {
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: var(--resize-edge-size);
+            cursor: ns-resize; /* 垂直缩放指针 */
+        }
+        .window-resize-edge.bottom {
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: var(--resize-edge-size);
+            cursor: ns-resize; /* 垂直缩放指针 */
+        }
+        .window-resize-edge.corner-tl {
+            left: 0;
+            top: 0;
+            width: var(--resize-edge-size);
+            height: var(--resize-edge-size);
+            cursor: nesw-resize; /* 对角线缩放指针 */
+        }
+        .window-resize-edge.corner-tr {
+            right: 0;
+            top: 0;
+            width: var(--resize-edge-size);
+            height: var(--resize-edge-size);
+            cursor: nwse-resize; /* 对角线缩放指针 */
+        }
+        .window-resize-edge.corner-bl {
+            left: 0;
+            bottom: 0;
+            width: var(--resize-edge-size);
+            height: var(--resize-edge-size);
+            cursor: nwse-resize; /* 对角线缩放指针 */
+        }
+        .window-resize-edge.corner-br {
+            right: 0;
+            bottom: 0;
+            width: var(--resize-edge-size);
+            height: var(--resize-edge-size);
+            cursor: nesw-resize; /* 对角线缩放指针 */
+        }
+        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel, .setting-detail.active .setting-panel, .blank-popup-detail.active .blank-popup-panel {
             transform: translateY(0);
             opacity: 1;
         }
+        /* 标题栏样式（可拖动） */
         .panel-header {
             padding: 8px 16px;
             background-color: #f8f9fa;
@@ -217,6 +289,14 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #eee;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            position: relative;
+            z-index: 20;
+        }
+        .panel-header:active {
+            cursor: grabbing;
         }
         .panel-title {
             font-size: 14px;
@@ -227,6 +307,7 @@
             height: 20px;
             cursor: pointer;
             position: relative;
+            z-index: 2002;
         }
         .close-btn::before,
         .close-btn::after {
@@ -242,17 +323,86 @@
         .close-btn::after {
             transform: translate(-50%, -50%) rotate(-45deg);
         }
+        /* 内容容器样式 - 无滚动条但可滚动 */
+        .panel-content-wrapper {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 40px); /* 减去标题栏高度 */
+            overflow: auto;
+            /* 隐藏滚动条 - 兼容WebKit浏览器 */
+        }
+        .panel-content-wrapper::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+        .panel-content-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .panel-content-wrapper::-webkit-scrollbar-thumb {
+            background: transparent;
+        }
+        /* 内容区域样式 - 自适应子元素 */
         .panel-content {
             padding: 16px;
             background-color: #e3f2fd;
+            min-height: 100%;
+            box-sizing: border-box;
         }
-        /* 设置面板内容样式 */
+        /* 空白弹窗内容样式（含文本和按钮） */
+        .blank-popup-content {
+            padding: 20px 16px;
+            background-color: #e3f2fd;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .popup-text {
+            font-size: 16px;
+            color: #212121;
+            text-align: center;
+            margin: 0;
+        }
+        .popup-btn-group {
+            display: flex;
+            gap: 12px;
+            align-self: flex-end;
+        }
+        .popup-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .popup-btn-cancel {
+            background-color: #f5f5f5;
+            color: #212121;
+            border: 1px solid #e0e0e0;
+        }
+        .popup-btn-cancel:hover {
+            background-color: #e0e0e0;
+        }
+        .popup-btn-confirm {
+            background-color: #0277bd;
+            color: white;
+        }
+        .popup-btn-confirm:hover {
+            background-color: #01579b;
+        }
+        /* 设置面板样式 */
         .setting-content {
             padding: 20px 16px;
             background-color: #e3f2fd;
             display: flex;
             flex-direction: column;
             gap: 16px;
+            min-height: 100%;
+            box-sizing: border-box;
         }
         .setting-item {
             display: flex;
@@ -260,6 +410,7 @@
             align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
+            cursor: pointer; /* 关闭所有窗口选项可点击 */
         }
         .setting-item:last-child {
             border-bottom: none;
@@ -268,25 +419,30 @@
             font-size: 16px;
             color: #212121;
         }
-        /* 恢复原有列表样式，确保排序不变 */
-        .social-item, .resource-item {
+        .dark-mode-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* 列表项样式 */
+        .social-item, .resource-item, .fun-item {
             display: flex;
             align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
             cursor: pointer;
         }
-        .social-item:last-child, .resource-item:last-child {
+        .social-item:last-child, .resource-item:last-child, .fun-item:last-child {
             border-bottom: none;
         }
-        .social-avatar, .resource-icon {
+        .social-avatar, .resource-icon, .fun-icon {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             margin-right: 12px;
             object-fit: cover;
         }
-        .social-name, .resource-name {
+        .social-name, .resource-name, .fun-name {
             font-size: 16px;
             color: #0277bd;
             flex-grow: 1;
@@ -312,6 +468,7 @@
             border-right: 2px solid #0277bd;
             transform: translate(-30%, -50%) rotate(45deg);
         }
+        /* 点击动画 */
         .click-circle {
             position: fixed;
             width: 60px;
@@ -326,19 +483,12 @@
             animation: clickCircle 1s ease-out forwards;
         }
         @keyframes clickCircle {
-            0% {
-                transform: scale(0);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
-        /* 深色模式全局样式 - 修复所有问题点 */
+        /* 深色模式 */
         body.dark-mode {
-            background-image: url("beijing.png"); /* 保留原背景图，调整叠加色 */
-            background-color: rgba(17, 24, 39, 0.95); /* 深色背景叠加 */
+            background-color: rgba(17, 24, 39, 0.95);
             color: #f3f4f6;
         }
         body.dark-mode .container {
@@ -350,7 +500,6 @@
         body.dark-mode .header-text {
             color: #f3f4f6;
         }
-        /* 深色模式下标题栏按钮染色为白色 */
         body.dark-mode .header-btn img {
             filter: invert(1) grayscale(100%) brightness(1);
         }
@@ -366,10 +515,10 @@
             background-color: #6b7280;
         }
         body.dark-mode .panel-content,
+        body.dark-mode .blank-popup-content,
         body.dark-mode .setting-content {
             background-color: #374151;
         }
-        /* 深色模式下弹窗标题栏样式 */
         body.dark-mode .panel-header {
             background-color: #1f2937;
             border-bottom-color: #374151;
@@ -377,7 +526,6 @@
         body.dark-mode .panel-title {
             color: #f3f4f6;
         }
-        /* 深色模式下关闭按钮颜色 */
         body.dark-mode .close-btn::before,
         body.dark-mode .close-btn::after {
             background-color: #f3f4f6;
@@ -385,24 +533,32 @@
         body.dark-mode .social-name,
         body.dark-mode .resource-name,
         body.dark-mode .fun-name,
-        body.dark-mode .setting-label {
+        body.dark-mode .setting-label,
+        body.dark-mode .popup-text {
             color: #f3f4f6;
         }
         body.dark-mode .social-id,
         body.dark-mode .profile-english-name {
             color: #d1d5db;
         }
-        /* 深色模式下箭头颜色 */
         body.dark-mode .arrow-right::before {
             border-top-color: #d1d5db;
             border-right-color: #d1d5db;
         }
-        /* 修复深色模式下图片反色问题 - 重置所有功能图片滤镜 */
         body.dark-mode .social-avatar,
         body.dark-mode .resource-icon,
+        body.dark-mode .fun-icon,
         body.dark-mode .header-icon,
         body.dark-mode .profile-avatar {
             filter: none;
+        }
+        body.dark-mode .popup-btn-cancel {
+            background-color: #4b5563;
+            color: #f3f4f6;
+            border-color: #6b7280;
+        }
+        body.dark-mode .popup-btn-cancel:hover {
+            background-color: #6b7280;
         }
         /* 开关样式 */
         .toggle-switch {
@@ -444,10 +600,18 @@
         input:checked + .toggle-slider:before {
             transform: translateX(24px);
         }
+        /* 拖动时样式 */
+        .panel-dragging {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        /* 缩放时样式 */
+        .panel-resizing {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
-    <!-- 音频播放标签，默认不自动播放（根据本地存储判断） -->
+    <!-- 音频播放 -->
     <audio id="backgroundMusic" src="Music.mp3" loop>
         您的浏览器不支持音频播放，请升级浏览器。
     </audio>
@@ -458,23 +622,21 @@
                 <div class="header-text">小源的网站</div>
             </div>
             <div class="header-right">
-                <!-- 音乐控制按钮（无文字提示） -->
+                <!-- 音乐控制按钮（无提示文本，仅图标） -->
                 <button class="header-btn" id="musicBtn" onclick="toggleMusic()">
                     <img src="sy1.png" alt="">
                 </button>
-                <!-- 设置按钮（无文字提示） -->
+                <!-- 设置按钮（无提示文本，仅图标） -->
                 <button class="header-btn" id="settingBtn" onclick="openPanel('setting')">
-                    <img src="shezhi.png" alt="">
+                    <img src="shezhizhi.png" alt="">
                 </button>
             </div>
         </div>
         <div class="profile">
             <img src="touxiang.png" alt="小源的头像" class="profile-avatar">
             <div class="profile-name">小源呀</div>
-            <!-- 新增英文名称文本 -->
             <div class="profile-english-name">Xiaoyuan</div>
             <div class="button-container">
-                <!-- 保持原有按钮排序：社交平台 → 分享资源 → 好玩的 → 联系方式 -->
                 <button class="btn btn-blue" data-type="social">社交平台</button>
                 <button class="btn btn-blue" data-type="resource">分享资源</button>
                 <button class="btn btn-blue" data-type="fun">好玩的</button>
@@ -482,146 +644,266 @@
             </div>
         </div>
     </div>
-    <!-- 社交平台详情面板（排序不变） -->
+
+    <!-- 社交平台弹窗（删除测试信息，内容无滚动条滑动） -->
     <div class="social-detail" id="socialDetail">
         <div class="social-panel">
-            <div class="panel-header">
+            <!-- 四边+四角缩放热区（容错率10px） -->
+            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+            
+            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
                 <div class="panel-title">社交平台</div>
-                <div class="close-btn" onclick="hidePanel('socialDetail')"></div>
+                <div class="close-btn" onclick="hidePanel(this.closest('.social-detail'))"></div>
             </div>
-            <div class="panel-content">
-                <div class="social-item" onclick="openKuaishouProfile()">
-                    <img src="ks.png" alt="快手图标" class="social-avatar">
-                    <div>
-                        <div class="social-name">我的快手主页</div>
-                        <div class="social-id">id:x1594482</div>
+            <!-- 无滚动条滚动容器 -->
+            <div class="panel-content-wrapper">
+                <div class="panel-content">
+                    <div class="social-item" onclick="openKuaishouProfile()">
+                        <img src="ks.png" alt="快手图标" class="social-avatar">
+                        <div>
+                            <div class="social-name">我的快手主页</div>
+                            <div class="social-id">id:x1594482</div>
+                        </div>
+                        <div class="arrow-right"></div>
                     </div>
-                    <div class="arrow-right"></div>
+                    <!-- 删除测试信息，仅保留核心内容 -->
                 </div>
             </div>
         </div>
     </div>
-    <!-- 分享资源详情面板（排序不变） -->
+
+    <!-- 分享资源弹窗（内容无滚动条滑动） -->
     <div class="resource-detail" id="resourceDetail">
         <div class="resource-panel">
-            <div class="panel-header">
+            <!-- 四边+四角缩放热区 -->
+            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+            
+            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
                 <div class="panel-title">分享资源</div>
-                <div class="close-btn" onclick="hidePanel('resourceDetail')"></div>
+                <div class="close-btn" onclick="hidePanel(this.closest('.resource-detail'))"></div>
             </div>
-            <div class="panel-content">
-                <!-- 保持原有资源排序：软件分享 → mc模组 → 所有资源 -->
-                <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-ijSj3')">
-                    <img src="sy.png" alt="软件分享图标" class="resource-icon">
-                    <div class="resource-name">软件分享</div>
-                    <div class="arrow-right"></div>
-                </div>
-                <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-qjSj3')">
-                    <img src="mc.png" alt="Mc模组图标" class="resource-icon">
-                    <div class="resource-name">mc模组</div>
-                    <div class="arrow-right"></div>
-                </div>
-                <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-5jSj3')">
-                    <img src="yy.png" alt="所有资源图标" class="resource-icon">
-                    <div class="resource-name">所有资源</div>
-                    <div class="arrow-right"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- 好玩的详情面板 -->
-    <div class="fun-detail" id="funDetail">
-        <div class="fun-panel">
-            <div class="panel-header">
-                <div class="panel-title">好玩的</div>
-                <div class="close-btn" onclick="hidePanel('funDetail')"></div>
-            </div>
-            <div class="panel-content" style="text-align: center; padding: 30px 0;">
-                <p style="font-size: 18px; color: #212121; margin: 0;">暂时还没有</p>
-            </div>
-        </div>
-    </div>
-    <!-- 联系方式详情面板（内容不变） -->
-    <div class="contact-detail" id="contactDetail">
-        <div class="contact-panel">
-            <div class="panel-header">
-                <div class="panel-title">联系方式</div>
-                <div class="close-btn" onclick="hidePanel('contactDetail')"></div>
-            </div>
-            <div class="panel-content">
-                <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: x114514-9178@outlook.com 联系</p>
-            </div>
-        </div>
-    </div>
-    <!-- 设置面板 -->
-    <div class="setting-detail" id="settingDetail">
-        <div class="setting-panel">
-            <div class="panel-header">
-                <div class="panel-title">设置</div>
-                <div class="close-btn" onclick="hidePanel('settingDetail')"></div>
-            </div>
-            <div class="setting-content">
-                <div class="setting-item">
-                    <span class="setting-label">深色模式</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="resetDarkModeToSystem()">默认</button>
+            <!-- 无滚动条滚动容器 -->
+            <div class="panel-content-wrapper">
+                <div class="panel-content">
+                    <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-ijSj3')">
+                        <img src="sy.png" alt="软件分享图标" class="resource-icon">
+                        <div class="resource-name">软件分享</div>
+                        <div class="arrow-right"></div>
+                    </div>
+                    <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-qjSj3')">
+                        <img src="mc.png" alt="Mc模组图标" class="resource-icon">
+                        <div class="resource-name">mc模组</div>
+                        <div class="arrow-right"></div>
+                    </div>
+                    <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-5jSj3')">
+                        <img src="yy.png" alt="所有资源图标" class="resource-icon">
+                        <div class="resource-name">所有资源</div>
+                        <div class="arrow-right"></div>
                     </div>
                 </div>
-                <div class="setting-item">
-                    <span class="setting-label">清除音乐记录</span>
-                    <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="clearMusicStorage()">清除</button>
-                </div>
-                <div class="setting-item">
-                    <span class="setting-label">关于网站</span>
-                    <div class="arrow-right"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 好玩的弹窗（内容无滚动条滑动） -->
+    <div class="fun-detail" id="funDetail">
+        <div class="fun-panel">
+            <!-- 四边+四角缩放热区 -->
+            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+            
+            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
+                <div class="panel-title">好玩的</div>
+                <div class="close-btn" onclick="hidePanel(this.closest('.fun-detail'))"></div>
+            </div>
+            <!-- 无滚动条滚动容器 -->
+            <div class="panel-content-wrapper">
+                <div class="panel-content">
+                    <div class="fun-item" onclick="openInfinitePopups()">
+                        <img src="ic0001.png" alt="无限弹窗图标" class="fun-icon">
+                        <div class="fun-name">无限弹窗</div>
+                        <div class="arrow-right"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 联系方式弹窗（内容无滚动条滑动） -->
+    <div class="contact-detail" id="contactDetail">
+        <div class="contact-panel">
+            <!-- 四边+四角缩放热区 -->
+            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+            
+            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
+                <div class="panel-title">联系方式</div>
+                <div class="close-btn" onclick="hidePanel(this.closest('.contact-detail'))"></div>
+            </div>
+            <!-- 无滚动条滚动容器 -->
+            <div class="panel-content-wrapper">
+                <div class="panel-content">
+                    <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: x114514-9178@outlook.com 联系</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置弹窗（内容无滚动条滑动） -->
+    <div class="setting-detail" id="settingDetail">
+        <div class="setting-panel">
+            <!-- 四边+四角缩放热区 -->
+            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+            
+            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
+                <div class="panel-title">设置</div>
+                <div class="close-btn" onclick="hidePanel(this.closest('.setting-detail'))"></div>
+            </div>
+            <!-- 无滚动条滚动容器 -->
+            <div class="panel-content-wrapper">
+                <div class="setting-content">
+                    <div class="setting-item">
+                        <span class="setting-label">深色模式</span>
+                        <div class="dark-mode-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="resetDarkModeToSystem()">默认</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">清除音乐记录</span>
+                        <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="clearMusicStorage()">清除</button>
+                    </div>
+                    <div class="setting-item" onclick="closeAllWindows()">
+                        <span class="setting-label">关闭所有窗口</span>
+                        <div class="arrow-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 深色模式相关变量
+        // 基础变量
         const darkModeToggle = document.getElementById('darkModeToggle');
-        const DARK_MODE_KEY = 'darkModeSetting'; // 本地存储键名
-        const SYSTEM_DEFAULT = 'system';
-        const DARK_MODE = 'dark';
-        const LIGHT_MODE = 'light';
+        const DARK_MODE_KEY = 'darkModeSetting';
         let selectedBtn = null;
         let isPanelOpen = false;
-        // 音乐元素和状态
+        let currentZIndex = 2001; // 初始层级
+        
+        // 音乐相关
         const musicElement = document.getElementById('backgroundMusic');
         const musicBtnImg = document.getElementById('musicBtn').querySelector('img');
-        // 初始化页面（音乐+深色模式）
+        
+        // 拖动相关变量
+        let isDragging = false;
+        let dragTarget = null;
+        let startX = 0;
+        let startY = 0;
+        let targetLeft = 0;
+        let targetTop = 0;
+        
+        // 缩放相关变量
+        let isResizing = false;
+        let resizeTarget = null;
+        let resizeType = ''; // left/right/top/bottom/corner-tl/corner-tr/corner-bl/corner-br
+        let startWidth = 0;
+        let startHeight = 0;
+        let startLeft = 0;
+        let startTop = 0;
+        const minWidth = 250; // 最小宽度（不能调太小）
+        const minHeight = 180; // 最小高度（不能调太小）
+
+        // 初始化
         window.onload = function() {
-            // 初始化音乐状态
-            const musicState = localStorage.getItem('musicState');
-            if (musicState === 'playing') {
-                musicElement.play().catch(err => setMusicPaused());
-                setMusicPlaying();
-            } else {
-                setMusicPaused();
-            }
-            // 初始化深色模式（修复系统深色模式下无法关闭的问题）
+            setMusicPaused();
             initDarkMode();
+            bindButtonEvents();
+            bindGlobalEvents();
         };
-        // 初始化深色模式（优先本地存储 → 系统设置）- 修复逻辑
+
+        // 绑定按钮点击事件
+        function bindButtonEvents() {
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', btnClickHandle);
+            });
+        }
+
+        // 绑定全局事件（点击空白仅隐藏选择框）
+        function bindGlobalEvents() {
+            // 鼠标拖动
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            // 触摸拖动
+            document.addEventListener('touchmove', dragTouch, { passive: false });
+            document.addEventListener('touchend', stopDrag);
+            document.addEventListener('touchcancel', stopDrag);
+            // 鼠标缩放
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+            // 触摸缩放
+            document.addEventListener('touchmove', resizeTouch, { passive: false });
+            document.addEventListener('touchend', stopResize);
+            document.addEventListener('touchcancel', stopResize);
+            // 点击动画
+            document.addEventListener('click', addClickCircle);
+            // 点击空白处仅隐藏选择框，不关闭窗口
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.blank-popup-panel') && !event.target.closest('.header-btn')) {
+                    cancelAllSelected(); // 仅隐藏选择框
+                }
+            });
+        }
+
+        // 深色模式初始化
         function initDarkMode() {
             const savedSetting = localStorage.getItem(DARK_MODE_KEY);
             const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            // 强制移除body的dark-mode类，避免残留
+
             document.body.classList.remove('dark-mode');
-            
-            if (savedSetting === DARK_MODE) {
+
+            if (savedSetting === 'dark') {
                 enableDarkMode();
                 darkModeToggle.checked = true;
-            } else if (savedSetting === LIGHT_MODE) {
+            } else if (savedSetting === 'light') {
                 disableDarkMode();
                 darkModeToggle.checked = false;
             } else {
-                // 系统默认：跟随系统设置
                 if (systemIsDark) {
                     enableDarkMode();
                     darkModeToggle.checked = true;
@@ -631,143 +913,196 @@
                 }
             }
         }
-        // 启用深色模式
+
         function enableDarkMode() {
             document.body.classList.add('dark-mode');
         }
-        // 禁用深色模式（浅色模式）- 修复关闭逻辑
+
         function disableDarkMode() {
             document.body.classList.remove('dark-mode');
-            // 强制刷新样式，确保所有元素同步切换
-            document.body.offsetHeight; // 触发重绘
+            document.body.offsetHeight;
         }
-        // 切换深色/浅色模式 - 修复切换逻辑
+
         function toggleDarkMode() {
             const isDark = document.body.classList.contains('dark-mode');
             if (isDark) {
                 disableDarkMode();
-                localStorage.setItem(DARK_MODE_KEY, LIGHT_MODE);
-                // 同步更新开关状态
+                localStorage.setItem(DARK_MODE_KEY, 'light');
                 darkModeToggle.checked = false;
             } else {
                 enableDarkMode();
-                localStorage.setItem(DARK_MODE_KEY, DARK_MODE);
-                // 同步更新开关状态
+                localStorage.setItem(DARK_MODE_KEY, 'dark');
                 darkModeToggle.checked = true;
             }
         }
-        // 重置为系统默认深浅色模式
+
         function resetDarkModeToSystem() {
             localStorage.removeItem(DARK_MODE_KEY);
-            initDarkMode(); // 重新初始化，跟随系统
+            initDarkMode();
             alert('已恢复为系统默认模式');
         }
-        // 切换音乐播放/暂停
+
+        // 音乐控制
         function toggleMusic() {
             if (musicElement.paused) {
                 musicElement.play().then(() => {
-                    setMusicPlaying();
+                    musicBtnImg.src = 'sy2.png';
+                    localStorage.setItem('musicState', 'playing');
                 }).catch(err => {
                     alert('浏览器限制自动播放，请手动授权或刷新页面后重试');
                 });
             } else {
                 musicElement.pause();
-                setMusicPaused();
+                musicBtnImg.src = 'sy1.png';
+                localStorage.setItem('musicState', 'paused');
             }
         }
-        // 设置音乐播放状态
-        function setMusicPlaying() {
-            musicBtnImg.src = 'sy2.png';
-            localStorage.setItem('musicState', 'playing');
-        }
-        // 设置音乐暂停状态
+
         function setMusicPaused() {
             musicElement.pause();
             musicBtnImg.src = 'sy1.png';
             localStorage.setItem('musicState', 'paused');
         }
-        // 清除音乐本地存储记录
+
         function clearMusicStorage() {
             localStorage.removeItem('musicState');
             setMusicPaused();
             alert('音乐记录已清除');
         }
-        // 按钮点击处理
+
+        // 按钮选择框逻辑：第一次点击加粉色框，第二次点击执行操作
         function btnClickHandle(event) {
             const currentBtn = event.currentTarget;
             const btnType = currentBtn.dataset.type;
-            if (isPanelOpen) {
-                closeAllPanels();
-                isPanelOpen = false;
-                return;
-            }
+
             if (selectedBtn === currentBtn) {
+                // 第二次点击：执行操作
                 openPanel(btnType);
                 isPanelOpen = true;
             } else {
+                // 第一次点击：添加粉色选择框
                 cancelAllSelected();
                 currentBtn.classList.add('selected');
                 selectedBtn = currentBtn;
+                isPanelOpen = false;
             }
         }
-        // 打开面板
+
+        // 打开面板（默认宽度，内容自适应）
         function openPanel(type) {
             let panelId = '';
             switch(type) {
-                case 'social':
-                    panelId = 'socialDetail';
-                    break;
-                case 'resource':
-                    panelId = 'resourceDetail';
-                    break;
-                case 'fun':
-                    panelId = 'funDetail';
-                    break;
-                case 'contact':
-                    panelId = 'contactDetail';
-                    break;
-                case 'setting':
-                    panelId = 'settingDetail';
-                    break;
+                case 'social': panelId = 'socialDetail'; break;
+                case 'resource': panelId = 'resourceDetail'; break;
+                case 'fun': panelId = 'funDetail'; break;
+                case 'contact': panelId = 'contactDetail'; break;
+                case 'setting': panelId = 'settingDetail'; break;
             }
-            document.getElementById(panelId).classList.add('active');
+
+            const originalPanel = document.getElementById(panelId);
+            const panelWidth = originalPanel.querySelector('[class$="-panel"]').offsetWidth;
+            const panelHeight = originalPanel.querySelector('[class$="-panel"]').offsetHeight;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const centerLeft = (screenWidth - panelWidth) / 2;
+            const centerTop = (screenHeight - panelHeight) / 2;
+
+            // 复制面板实现重复打开，使用默认宽度
+            const newPanel = originalPanel.cloneNode(true);
+            const newPanelId = panelId + '_' + Date.now();
+            newPanel.id = newPanelId;
+            const newPanelElement = newPanel.querySelector('[class$="-panel"]');
+            
+            // 强制居中定位，使用默认宽度
+            newPanelElement.style.left = `${centerLeft}px`;
+            newPanelElement.style.top = `${centerTop}px`;
+            newPanelElement.style.width = `${panelWidth}px`; // 保持默认宽度
+            newPanelElement.style.height = `${panelHeight}px`; // 保持默认高度
+            newPanelElement.style.zIndex = currentZIndex++;
+            
+            // 绑定新面板的事件（缩放+拖动）
+            const resizeEdges = newPanelElement.querySelectorAll('.window-resize-edge');
+            resizeEdges.forEach(edge => {
+                let edgeType = '';
+                if (edge.classList.contains('left')) edgeType = 'left';
+                else if (edge.classList.contains('right')) edgeType = 'right';
+                else if (edge.classList.contains('top')) edgeType = 'top';
+                else if (edge.classList.contains('bottom')) edgeType = 'bottom';
+                else if (edge.classList.contains('corner-tl')) edgeType = 'corner-tl';
+                else if (edge.classList.contains('corner-tr')) edgeType = 'corner-tr';
+                else if (edge.classList.contains('corner-bl')) edgeType = 'corner-bl';
+                else if (edge.classList.contains('corner-br')) edgeType = 'corner-br';
+                
+                edge.onmousedown = (e) => startResize(e, newPanelElement, edgeType);
+                edge.ontouchstart = (e) => startResizeTouch(e, newPanelElement, edgeType);
+            });
+            
+            const newHeader = newPanelElement.querySelector('.panel-header');
+            newHeader.onmousedown = (e) => startDrag(e, newPanelElement);
+            newHeader.ontouchstart = (e) => startDragTouch(e, newPanelElement);
+            
+            const newCloseBtn = newPanelElement.querySelector('.close-btn');
+            newCloseBtn.onclick = () => hidePanel(newPanel);
+            
+            // 添加到页面并显示
+            document.body.appendChild(newPanel);
+            setTimeout(() => {
+                newPanel.classList.add('active');
+            }, 10);
         }
-        // 隐藏面板
-        function hidePanel(panelId) {
-            document.getElementById(panelId).classList.remove('active');
+
+        // 隐藏单个面板
+        function hidePanel(panelElement) {
+            panelElement.classList.remove('active');
+            setTimeout(() => {
+                panelElement.remove();
+            }, 300);
+        }
+
+        // 关闭所有窗口：仅移除克隆的窗口，保留原始模板
+        function closeAllWindows() {
+            // 关闭所有克隆的系统面板
+            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
+                if (panel.id.includes('_')) { // 仅移除克隆的面板
+                    panel.classList.remove('active');
+                    setTimeout(() => panel.remove(), 300);
+                } else {
+                    panel.classList.remove('active'); // 原始面板仅隐藏不删除
+                }
+            });
+            
+            // 关闭所有空白弹窗
+            document.querySelectorAll('.blank-popup-detail').forEach(popup => {
+                popup.classList.remove('active');
+                setTimeout(() => popup.remove(), 300);
+            });
+            
+            // 取消按钮选中状态
+            cancelAllSelected();
+            selectedBtn = null;
             isPanelOpen = false;
         }
-        // 关闭所有面板
-        function closeAllPanels() {
-            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
-                panel.classList.remove('active');
-            });
-        }
-        // 取消所有按钮选中状态
+
+        // 取消按钮选中状态（隐藏粉色选择框）
         function cancelAllSelected() {
             document.querySelectorAll('.btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
             selectedBtn = null;
         }
-        // 点击空白处关闭面板
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.header-btn')) {
-                cancelAllSelected();
-                closeAllPanels();
-                isPanelOpen = false;
-            }
-        });
+
         // 打开快手主页
         function openKuaishouProfile() {
             window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
         }
+
         // 打开资源链接
         function openResourceLink(url) {
             window.open(url, '_blank', 'noopener noreferrer');
         }
-        // 点击动画效果
-        document.addEventListener('click', function(event) {
+
+        // 点击动画
+        function addClickCircle(event) {
             const circle = document.createElement('div');
             circle.classList.add('click-circle');
             circle.style.left = (event.clientX - 30) + 'px';
@@ -775,11 +1110,345 @@
             document.body.appendChild(circle);
             circle.classList.add('animate');
             setTimeout(() => circle.remove(), 1000);
-        });
-        // 绑定按钮点击事件
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('click', btnClickHandle);
-        });
+        }
+
+        // 每次打开空白弹窗都读取wenben.txt（确保每次文本最新）
+        async function getRandomTextFromFile() {
+            try {
+                const response = await fetch('wenben.txt');
+                if (!response.ok) throw new Error('文件未找到');
+                const text = await response.text();
+                const lines = text.split('\n').filter(line => line.trim() !== ''); // 过滤空行
+                return lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)].trim() : '错误';
+            } catch (error) {
+                return '错误';
+            }
+        }
+
+        // 无限弹窗（内容无滚动条滑动，标题为"提示"）
+        async function openInfinitePopups() {
+            const popupWidth = 300; // 默认宽度
+            const popupHeight = 180; // 默认高度
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const centerLeft = (screenWidth - popupWidth) / 2;
+            const centerTop = (screenHeight - popupHeight) / 2;
+
+            for (let i = 0; i < 25; i++) {
+                // 每次打开都读取文本（确保实时获取最新内容）
+                const popupText = await getRandomTextFromFile();
+                
+                setTimeout(() => {
+                    // 创建空白弹窗
+                    const popup = document.createElement('div');
+                    popup.className = 'blank-popup-detail';
+                    popup.style.position = 'fixed';
+                    popup.style.left = '0';
+                    popup.style.top = '0';
+                    
+                    // 初始居中，小范围偏移避免重叠
+                    const randomOffsetX = (Math.random() - 0.5) * 50;
+                    const randomOffsetY = (Math.random() - 0.5) * 50;
+                    const finalLeft = centerLeft + randomOffsetX;
+                    const finalTop = centerTop + randomOffsetY;
+
+                    // 弹窗标题改为"提示"，添加四边缩放热区，无滚动条滚动容器
+                    popup.innerHTML = `
+                        <div class="blank-popup-panel" style="left: ${finalLeft}px; top: ${finalTop}px; width: ${popupWidth}px; height: ${popupHeight}px; z-index: ${currentZIndex++};">
+                            <!-- 四边+四角缩放热区 -->
+                            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+                            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+                            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+                            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+                            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+                            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+                            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+                            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+                            
+                            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
+                                <div class="panel-title">提示</div>
+                                <div class="close-btn" onclick="hidePanel(this.closest('.blank-popup-detail'))"></div>
+                            </div>
+                            <!-- 无滚动条滚动容器 -->
+                            <div class="panel-content-wrapper">
+                                <div class="blank-popup-content">
+                                    <p class="popup-text">${popupText}</p>
+                                    <div class="popup-btn-group">
+                                        <button class="popup-btn popup-btn-cancel" onclick="hidePanel(this.closest('.blank-popup-detail'))">取消</button>
+                                        <button class="popup-btn popup-btn-confirm" onclick="hidePanel(this.closest('.blank-popup-detail'))">确定</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.body.appendChild(popup);
+
+                    // 触发显示动画
+                    setTimeout(() => {
+                        popup.classList.add('active');
+                    }, 10);
+                }, i * 200); // 0.2秒间隔
+            }
+        }
+
+        // 鼠标拖动开始
+        function startDrag(event, target) {
+            if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
+
+            isDragging = true;
+            dragTarget = target;
+            dragTarget.classList.add('panel-dragging');
+
+            // 记录初始位置
+            startX = event.clientX;
+            startY = event.clientY;
+            const rect = dragTarget.getBoundingClientRect();
+            targetLeft = rect.left;
+            targetTop = rect.top;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 触摸拖动开始
+        function startDragTouch(event, target) {
+            if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
+
+            const touch = event.touches[0];
+            isDragging = true;
+            dragTarget = target;
+            dragTarget.classList.add('panel-dragging');
+
+            // 记录初始位置
+            startX = touch.clientX;
+            startY = touch.clientY;
+            const rect = dragTarget.getBoundingClientRect();
+            targetLeft = rect.left;
+            targetTop = rect.top;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 鼠标拖动中（允许拖到屏幕外）
+        function drag(event) {
+            if (!isDragging || !dragTarget) return;
+
+            const offsetX = event.clientX - startX;
+            const offsetY = event.clientY - startY;
+
+            // 自由移动，不限制边界
+            const newLeft = targetLeft + offsetX;
+            const newTop = targetTop + offsetY;
+
+            dragTarget.style.left = `${newLeft}px`;
+            dragTarget.style.top = `${newTop}px`;
+
+            event.stopPropagation();
+        }
+
+        // 触摸拖动中（允许拖到屏幕外）
+        function dragTouch(event) {
+            if (!isDragging || !dragTarget) return;
+
+            const touch = event.touches[0];
+            const offsetX = touch.clientX - startX;
+            const offsetY = touch.clientY - startY;
+
+            // 自由移动，不限制边界
+            const newLeft = targetLeft + offsetX;
+            const newTop = targetTop + offsetY;
+
+            dragTarget.style.left = `${newLeft}px`;
+            dragTarget.style.top = `${newTop}px`;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 停止拖动
+        function stopDrag() {
+            if (dragTarget) {
+                dragTarget.classList.remove('panel-dragging');
+            }
+            isDragging = false;
+            dragTarget = null;
+        }
+
+        // 鼠标缩放开始（容错率10px）
+        function startResize(event, target, type) {
+            if (isDragging) return;
+
+            isResizing = true;
+            resizeTarget = target;
+            resizeType = type;
+            resizeTarget.classList.add('panel-resizing');
+
+            // 记录初始尺寸和位置
+            const rect = resizeTarget.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            startLeft = rect.left;
+            startTop = rect.top;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 触摸缩放开始（容错率10px）
+        function startResizeTouch(event, target, type) {
+            if (isDragging) return;
+
+            const touch = event.touches[0];
+            isResizing = true;
+            resizeTarget = target;
+            resizeType = type;
+            resizeTarget.classList.add('panel-resizing');
+
+            // 记录初始尺寸和位置
+            const rect = resizeTarget.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            startLeft = rect.left;
+            startTop = rect.top;
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 鼠标缩放中（四边缩放，无限拉大，限制最小尺寸）
+        function resize(event) {
+            if (!isResizing || !resizeTarget) return;
+
+            const offsetX = event.clientX - startX;
+            const offsetY = event.clientY - startY;
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+
+            // 根据缩放类型调整尺寸和位置
+            switch(resizeType) {
+                case 'left':
+                    newWidth = Math.max(minWidth, startWidth - offsetX);
+                    newLeft = startLeft + offsetX;
+                    break;
+                case 'right':
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    break;
+                case 'top':
+                    newHeight = Math.max(minHeight, startHeight - offsetY);
+                    newTop = startTop + offsetY;
+                    break;
+                case 'bottom':
+                    newHeight = Math.max(minHeight, startHeight + offsetY);
+                    break;
+                case 'corner-tl':
+                    newWidth = Math.max(minWidth, startWidth - offsetX);
+                    newHeight = Math.max(minHeight, startHeight - offsetY);
+                    newLeft = startLeft + offsetX;
+                    newTop = startTop + offsetY;
+                    break;
+                case 'corner-tr':
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newHeight = Math.max(minHeight, startHeight - offsetY);
+                    newTop = startTop + offsetY;
+                    break;
+                case 'corner-bl':
+                    newWidth = Math.max(minWidth, startWidth - offsetX);
+                    newHeight = Math.max(minHeight, startHeight + offsetY);
+                    newLeft = startLeft + offsetX;
+                    break;
+                case 'corner-br':
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newHeight = Math.max(minHeight, startHeight + offsetY);
+                    break;
+            }
+
+            // 应用新尺寸和位置
+            resizeTarget.style.width = `${newWidth}px`;
+            resizeTarget.style.height = `${newHeight}px`;
+            resizeTarget.style.left = `${newLeft}px`;
+            resizeTarget.style.top = `${newTop}px`;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 触摸缩放中（四边缩放，无限拉大，限制最小尺寸）
+        function resizeTouch(event) {
+            if (!isResizing || !resizeTarget) return;
+
+            const touch = event.touches[0];
+            const offsetX = touch.clientX - startX;
+            const offsetY = touch.clientY - startY;
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+
+            // 根据缩放类型调整尺寸和位置
+            switch(resizeType) {
+                case 'left':
+                    newWidth = Math.max(minWidth, startWidth - offsetX);
+                    newLeft = startLeft + offsetX;
+                    break;
+                case 'right':
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    break;
+                case 'top':
+                    newHeight = Math.max(minHeight, startHeight - offsetY);
+                    newTop = startTop + offsetY;
+                    break;
+                case 'bottom':
+                    newHeight = Math.max(minHeight, startHeight + offsetY);
+                    break;
+                case 'corner-tl':
+                    newWidth = Math.max(minWidth, startWidth - offsetX);
+                    newHeight = Math.max(minHeight, startHeight - offsetY);
+                    newLeft = startLeft + offsetX;
+                    newTop = startTop + offsetY;
+                    break;
+                case 'corner-tr':
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newHeight = Math.max(minHeight, startHeight - offsetY);
+                    newTop = startTop + offsetY;
+                    break;
+                case 'corner-bl':
+                    newWidth = Math.max(minWidth, startWidth - offsetX);
+                    newHeight = Math.max(minHeight, startHeight + offsetY);
+                    newLeft = startLeft + offsetX;
+                    break;
+                case 'corner-br':
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newHeight = Math.max(minHeight, startHeight + offsetY);
+                    break;
+            }
+
+            // 应用新尺寸和位置
+            resizeTarget.style.width = `${newWidth}px`;
+            resizeTarget.style.height = `${newHeight}px`;
+            resizeTarget.style.left = `${newLeft}px`;
+            resizeTarget.style.top = `${newTop}px`;
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // 停止缩放
+        function stopResize() {
+            if (resizeTarget) {
+                resizeTarget.classList.remove('panel-resizing');
+            }
+            isResizing = false;
+            resizeTarget = null;
+            resizeType = '';
+        }
     </script>
 </body>
 </html>
