@@ -27,7 +27,7 @@
             width: 100%;
             max-width: 400px;
             background-color: rgba(227, 242, 253, 0.9);
-            border-radius: 32px; /* 主界面圆角放大（原20px） */
+            border-radius: 32px;
             padding: 20px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             display: flex;
@@ -42,7 +42,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
-            border-radius: 16px; /* 标题栏圆角同步放大（原10px） */
+            border-radius: 16px;
             margin-bottom: 20px;
         }
         .header-icon {
@@ -80,7 +80,7 @@
         .button-container {
             background-color: #fff;
             padding: 16px;
-            border-radius: 16px; /* 按钮容器圆角放大（原8px） */
+            border-radius: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 260px;
@@ -91,7 +91,7 @@
             padding: 12px;
             margin-bottom: 8px;
             border: none;
-            border-radius: 12px; /* 按钮圆角放大（原6px） */
+            border-radius: 12px;
             font-size: 16px;
             cursor: pointer;
             position: relative;
@@ -151,7 +151,7 @@
         .social-panel, .resource-panel, .contact-panel {
             background-color: white;
             border: 1px solid #ccc;
-            border-radius: 16px; /* 弹窗圆角同步放大（原8px） */
+            border-radius: 16px;
             width: 80%;
             max-width: 300px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -292,8 +292,9 @@
                 <div class="close-btn" onclick="hidePanel('socialDetail')"></div>
             </div>
             <div class="panel-content">
+                <!-- 快手图标：主目录下的ks.png -->
                 <div class="social-item" onclick="openKuaishouProfile()">
-                    <img src="png/ks.png" alt="快手图标" class="social-avatar">
+                    <img src="ks.png" alt="快手图标" class="social-avatar">
                     <div>
                         <div class="social-name">我的快手主页</div>
                         <div class="social-id">id:x1594482</div>
@@ -311,18 +312,21 @@
                 <div class="close-btn" onclick="hidePanel('resourceDetail')"></div>
             </div>
             <div class="panel-content">
+                <!-- 软件分享图标：主目录下的sy.png -->
                 <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-ijSj3')">
-                    <img src="png/sy.png" alt="软件分享图标" class="resource-icon">
+                    <img src="sy.png" alt="软件分享图标" class="resource-icon">
                     <div class="resource-name">软件分享</div>
                     <div class="arrow-right"></div>
                 </div>
+                <!-- Mc模组图标：主目录下的mc.png -->
                 <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-qjSj3')">
-                    <img src="png/mc.png" alt="Mc模组图标" class="resource-icon">
+                    <img src="mc.png" alt="Mc模组图标" class="resource-icon">
                     <div class="resource-name">mc模组</div>
                     <div class="arrow-right"></div>
                 </div>
+                <!-- 所有资源图标：主目录下的yy.png -->
                 <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-5jSj3')">
-                    <img src="png/yy.png" alt="所有资源图标" class="resource-icon">
+                    <img src="yy.png" alt="所有资源图标" class="resource-icon">
                     <div class="resource-name">所有资源</div>
                     <div class="arrow-right"></div>
                 </div>
