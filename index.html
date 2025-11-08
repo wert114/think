@@ -74,7 +74,7 @@
             align-items: center;
             gap: 12px; /* 按钮间距 */
         }
-        /* 音乐控制按钮和设置按钮样式 */
+        /* 音乐控制按钮和设置按钮样式 - 新增染色逻辑 */
         .header-btn {
             width: 24px;
             height: 24px;
@@ -82,9 +82,15 @@
             background: transparent;
             padding: 0;
             cursor: pointer;
-            object-fit: cover;
             border-radius: 4px;
             transition: background-color 0.2s;
+        }
+        .header-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: cover;
+            /* 默认黑色染色（浅色模式） */
+            filter: invert(0) grayscale(100%) brightness(0);
         }
         .header-btn:hover {
             background-color: rgba(0, 0, 0, 0.1);
@@ -329,7 +335,7 @@
                 opacity: 0;
             }
         }
-        /* 深色模式全局样式 */
+        /* 深色模式全局样式 - 修复所有问题点 */
         body.dark-mode {
             background-image: url("beijing.png"); /* 保留原背景图，调整叠加色 */
             background-color: rgba(17, 24, 39, 0.95); /* 深色背景叠加 */
@@ -343,6 +349,10 @@
         }
         body.dark-mode .header-text {
             color: #f3f4f6;
+        }
+        /* 深色模式下标题栏按钮染色为白色 */
+        body.dark-mode .header-btn img {
+            filter: invert(1) grayscale(100%) brightness(1);
         }
         body.dark-mode .button-container {
             background-color: #374151;
@@ -359,6 +369,19 @@
         body.dark-mode .setting-content {
             background-color: #374151;
         }
+        /* 深色模式下弹窗标题栏样式 */
+        body.dark-mode .panel-header {
+            background-color: #1f2937;
+            border-bottom-color: #374151;
+        }
+        body.dark-mode .panel-title {
+            color: #f3f4f6;
+        }
+        /* 深色模式下关闭按钮颜色 */
+        body.dark-mode .close-btn::before,
+        body.dark-mode .close-btn::after {
+            background-color: #f3f4f6;
+        }
         body.dark-mode .social-name,
         body.dark-mode .resource-name,
         body.dark-mode .fun-name,
@@ -368,6 +391,18 @@
         body.dark-mode .social-id,
         body.dark-mode .profile-english-name {
             color: #d1d5db;
+        }
+        /* 深色模式下箭头颜色 */
+        body.dark-mode .arrow-right::before {
+            border-top-color: #d1d5db;
+            border-right-color: #d1d5db;
+        }
+        /* 修复深色模式下图片反色问题 - 重置所有功能图片滤镜 */
+        body.dark-mode .social-avatar,
+        body.dark-mode .resource-icon,
+        body.dark-mode .header-icon,
+        body.dark-mode .profile-avatar {
+            filter: none;
         }
         /* 开关样式 */
         .toggle-switch {
@@ -416,7 +451,6 @@
     <audio id="backgroundMusic" src="Music.mp3" loop>
         您的浏览器不支持音频播放，请升级浏览器。
     </audio>
-
     <div class="container">
         <div class="header">
             <div class="header-left">
@@ -426,11 +460,11 @@
             <div class="header-right">
                 <!-- 音乐控制按钮（无文字提示） -->
                 <button class="header-btn" id="musicBtn" onclick="toggleMusic()">
-                    <img src="sy1.png" width="24" height="24">
+                    <img src="sy1.png" alt="">
                 </button>
                 <!-- 设置按钮（无文字提示） -->
                 <button class="header-btn" id="settingBtn" onclick="openPanel('setting')">
-                    <img src="shezhi.png" width="24" height="24">
+                    <img src="shezhi.png" alt="">
                 </button>
             </div>
         </div>
@@ -554,13 +588,11 @@
         const SYSTEM_DEFAULT = 'system';
         const DARK_MODE = 'dark';
         const LIGHT_MODE = 'light';
-
         let selectedBtn = null;
         let isPanelOpen = false;
         // 音乐元素和状态
         const musicElement = document.getElementById('backgroundMusic');
         const musicBtnImg = document.getElementById('musicBtn').querySelector('img');
-
         // 初始化页面（音乐+深色模式）
         window.onload = function() {
             // 初始化音乐状态
@@ -571,16 +603,17 @@
             } else {
                 setMusicPaused();
             }
-
-            // 初始化深色模式
+            // 初始化深色模式（修复系统深色模式下无法关闭的问题）
             initDarkMode();
         };
-
-        // 初始化深色模式（优先本地存储 → 系统设置）
+        // 初始化深色模式（优先本地存储 → 系统设置）- 修复逻辑
         function initDarkMode() {
             const savedSetting = localStorage.getItem(DARK_MODE_KEY);
             const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
+            
+            // 强制移除body的dark-mode类，避免残留
+            document.body.classList.remove('dark-mode');
+            
             if (savedSetting === DARK_MODE) {
                 enableDarkMode();
                 darkModeToggle.checked = true;
@@ -598,36 +631,37 @@
                 }
             }
         }
-
         // 启用深色模式
         function enableDarkMode() {
             document.body.classList.add('dark-mode');
         }
-
-        // 禁用深色模式（浅色模式）
+        // 禁用深色模式（浅色模式）- 修复关闭逻辑
         function disableDarkMode() {
             document.body.classList.remove('dark-mode');
+            // 强制刷新样式，确保所有元素同步切换
+            document.body.offsetHeight; // 触发重绘
         }
-
-        // 切换深色/浅色模式
+        // 切换深色/浅色模式 - 修复切换逻辑
         function toggleDarkMode() {
             const isDark = document.body.classList.contains('dark-mode');
             if (isDark) {
                 disableDarkMode();
                 localStorage.setItem(DARK_MODE_KEY, LIGHT_MODE);
+                // 同步更新开关状态
+                darkModeToggle.checked = false;
             } else {
                 enableDarkMode();
                 localStorage.setItem(DARK_MODE_KEY, DARK_MODE);
+                // 同步更新开关状态
+                darkModeToggle.checked = true;
             }
         }
-
         // 重置为系统默认深浅色模式
         function resetDarkModeToSystem() {
             localStorage.removeItem(DARK_MODE_KEY);
             initDarkMode(); // 重新初始化，跟随系统
             alert('已恢复为系统默认模式');
         }
-
         // 切换音乐播放/暂停
         function toggleMusic() {
             if (musicElement.paused) {
@@ -641,27 +675,23 @@
                 setMusicPaused();
             }
         }
-
         // 设置音乐播放状态
         function setMusicPlaying() {
             musicBtnImg.src = 'sy2.png';
             localStorage.setItem('musicState', 'playing');
         }
-
         // 设置音乐暂停状态
         function setMusicPaused() {
             musicElement.pause();
             musicBtnImg.src = 'sy1.png';
             localStorage.setItem('musicState', 'paused');
         }
-
         // 清除音乐本地存储记录
         function clearMusicStorage() {
             localStorage.removeItem('musicState');
             setMusicPaused();
             alert('音乐记录已清除');
         }
-
         // 按钮点击处理
         function btnClickHandle(event) {
             const currentBtn = event.currentTarget;
@@ -680,7 +710,6 @@
                 selectedBtn = currentBtn;
             }
         }
-
         // 打开面板
         function openPanel(type) {
             let panelId = '';
@@ -703,20 +732,17 @@
             }
             document.getElementById(panelId).classList.add('active');
         }
-
         // 隐藏面板
         function hidePanel(panelId) {
             document.getElementById(panelId).classList.remove('active');
             isPanelOpen = false;
         }
-
         // 关闭所有面板
         function closeAllPanels() {
             document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
                 panel.classList.remove('active');
             });
         }
-
         // 取消所有按钮选中状态
         function cancelAllSelected() {
             document.querySelectorAll('.btn').forEach(btn => {
@@ -724,7 +750,6 @@
             });
             selectedBtn = null;
         }
-
         // 点击空白处关闭面板
         document.addEventListener('click', function(event) {
             if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.header-btn')) {
@@ -733,17 +758,14 @@
                 isPanelOpen = false;
             }
         });
-
         // 打开快手主页
         function openKuaishouProfile() {
             window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
         }
-
         // 打开资源链接
         function openResourceLink(url) {
             window.open(url, '_blank', 'noopener noreferrer');
         }
-
         // 点击动画效果
         document.addEventListener('click', function(event) {
             const circle = document.createElement('div');
@@ -754,7 +776,6 @@
             circle.classList.add('animate');
             setTimeout(() => circle.remove(), 1000);
         });
-
         // 绑定按钮点击事件
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', btnClickHandle);
