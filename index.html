@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小源的网站</title>
+    <style>
+        body {
+            background-image: url("beijing.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: rgba(227, 242, 253, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            background-color: #f8f9fa;
+            width: 100%;
+            padding: 8px 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-icon {
+            width: 20px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .header-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            margin-bottom: 12px;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            color: #0277bd;
+            margin-bottom: 16px;
+        }
+
+        .button-container {
+            background-color: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 260px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s;
+            outline: none;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(0);
+            animation: ripple 0.5s ease-out;
+        }
+
+        .btn-white .ripple {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        .btn-blue {
+            background-color: #0277bd;
+            color: white;
+        }
+
+        .btn-blue:hover {
+            background-color: #01579b;
+        }
+
+        .btn-white {
+            background-color: white;
+            color: #212121;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-white:hover {
+            background-color: #f5f5f5;
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                max-width: 95%;
+            }
+            .button-container {
+                max-width: 240px;
+            }
+        }
+
+        /* 弹窗通用样式 */
+        .social-detail, .resource-detail, .contact-detail {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(227, 242, 253, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .social-detail.active, .resource-detail.active, .contact-detail.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .social-panel, .resource-panel, .contact-panel {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .panel-header {
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .close-btn {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .close-btn::before,
+        .close-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 14px;
+            height: 2px;
+            background-color: #000;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .close-btn::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .panel-content {
+            padding: 16px;
+            background-color: #e3f2fd;
+        }
+
+        /* 选项通用样式 */
+        .social-item, .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .social-item:last-child, .resource-item:last-child {
+            border-bottom: none;
+        }
+
+        .social-avatar, .resource-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .social-name, .resource-name {
+            font-size: 16px;
+            color: #0277bd;
+            flex-grow: 1;
+        }
+
+        .social-id {
+            font-size: 14px;
+            color: #212121;
+            margin-top: 4px;
+        }
+
+        .arrow-right {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+
+        .arrow-right::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            border-top: 2px solid #0277bd;
+            border-right: 2px solid #0277bd;
+            transform: translate(-30%, -50%) rotate(45deg);
+        }
+
+        /* 点击圆环效果 */
+        .click-circle {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid pink;
+            transform: scale(0);
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        .click-circle.animate {
+            animation: clickCircle 1s ease-out forwards;
+        }
+
+        @keyframes clickCircle {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon"></div>
+            <div class="header-text">小源的网站</div>
+        </div>
+
+        <div class="profile">
+            <img src="touxiang.png" alt="小源的头像" class="profile-avatar">
+            <div class="profile-name">小源呀</div>
+            <div class="button-container">
+                <button class="btn btn-blue" onclick="showSocialDetail(event)">社交平台</button>
+                <button class="btn btn-blue" onclick="showResourceDetail(event)">分享资源</button>
+                <button class="btn btn-white" onclick="showContactDetail(event)">联系方式</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 社交平台详情面板 -->
+    <div class="social-detail" id="socialDetail">
+        <div class="social-panel">
+            <div class="panel-header">
+                <div class="panel-title">社交平台</div>
+                <div class="close-btn" onclick="hideSocialDetail()"></div>
+            </div>
+            <div class="panel-content">
+                <div class="social-item" onclick="openKuaishouProfile()">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4M12 8h.01'/%3E%3C/svg%3E" class="social-avatar">
+                    <div>
+                        <div class="social-name">我的快手主页</div>
+                        <div class="social-id">id:x1594482</div>
+                    </div>
+                    <div class="arrow-right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享资源详情面板 -->
+    <div class="resource-detail" id="resourceDetail">
+        <div class="resource-panel">
+            <div class="panel-header">
+                <div class="panel-title">分享资源</div>
+                <div class="close-btn" onclick="hideResourceDetail()"></div>
+            </div>
+            <div class="panel-content">
+                <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-ijSj3')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v6m0 14v-6m0-8h.01'/%3E%3C/svg%3E" class="resource-icon">
+                    <div class="resource-name">软件分享</div>
+                    <div class="arrow-right"></div>
+                </div>
+                <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-qjSj3')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='12 2 2 7 12 12 22 7 12 2'/%3E%3Cpolyline points='2 17 12 22 22 17'/%3E%3Cpolyline points='2 12 12 17 22 12'/%3E%3C/svg%3E" class="resource-icon">
+                    <div class="resource-name">mc模组</div>
+                    <div class="arrow-right"></div>
+                </div>
+                <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-5jSj3')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v15M17 21h-10M7 3h10M9 8h6M9 13h6'/%3E%3C/svg%3E" class="resource-icon">
+                    <div class="resource-name">所有资源</div>
+                    <div class="arrow-right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系方式详情面板 -->
+    <div class="contact-detail" id="contactDetail">
+        <div class="contact-panel">
+            <div class="panel-header">
+                <div class="panel-title">联系方式</div>
+                <div class="close-btn" onclick="hideContactDetail()"></div>
+            </div>
+            <div class="panel-content">
+                <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: ×114514-9178@outlook.com 联系</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createRipple(event) {
+            const btn = event.currentTarget;
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const btnRect = btn.getBoundingClientRect();
+            const x = event.clientX - btnRect.left;
+            const y = event.clientY - btnRect.top;
+            
+            ripple.style.width = ripple.style.height = Math.max(btnRect.width, btnRect.height) + 'px';
+            ripple.style.left = x - (ripple.offsetWidth / 2) + 'px';
+            ripple.style.top = y - (ripple.offsetHeight / 2) + 'px';
+            
+            btn.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 500);
+        }
+
+        // 社交平台弹窗控制
+        function showSocialDetail() {
+            document.getElementById('socialDetail').classList.add('active');
+        }
+        function hideSocialDetail() {
+            document.getElementById('socialDetail').classList.remove('active');
+        }
+
+        // 打开快手主页
+        function openKuaishouProfile() {
+            window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
+        }
+
+        // 分享资源弹窗控制
+        function showResourceDetail() {
+            document.getElementById('resourceDetail').classList.add('active');
+        }
+        function hideResourceDetail() {
+            document.getElementById('resourceDetail').classList.remove('active');
+        }
+
+        // 打开资源链接
+        function openResourceLink(url) {
+            window.open(url, '_blank', 'noopener noreferrer');
+        }
+
+        // 联系方式弹窗控制
+        function showContactDetail() {
+            document.getElementById('contactDetail').classList.add('active');
+        }
+        function hideContactDetail() {
+            document.getElementById('contactDetail').classList.remove('active');
+        }
+
+        // 点击圆环效果
+        document.addEventListener('click', function(event) {
+            const circle = document.createElement('div');
+            circle.classList.add('click-circle');
+            circle.style.left = (event.clientX - 30) + 'px';
+            circle.style.top = (event.clientY - 30) + 'px';
+            document.body.appendChild(circle);
+            circle.classList.add('animate');
+            setTimeout(() => circle.remove(), 1000);
+        });
+    </script>
+</body>
+</html>
