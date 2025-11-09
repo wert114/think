@@ -8,6 +8,16 @@
     <link rel="shortcut icon" href="icon.png" type="image/png">
     
     <style>
+        /* 全局变量定义 - 统一控制宽高，修改此处即可 */
+        :root {
+            --popup-default-width: 320px;    /* 弹窗默认宽度 */
+            --popup-default-height: 200px;   /* 弹窗默认高度 */
+            --popup-min-width: 100px;        /* 弹窗最小宽度 */
+            --popup-min-height: 60px;       /* 弹窗最小高度 */
+            --resize-edge-size: 10px;        /* 缩放热区尺寸 */
+            --img-placeholder-bg: #e3f2fd;   /* 图片加载占位背景色（浅蓝色） */
+        }
+        
         /* 引入Minecraft字体 */
         @font-face {
             font-family: 'Minecraft';
@@ -24,10 +34,10 @@
             background-attachment: fixed;
             font-family: 'Minecraft', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 20px 0; /* 上下留空，避免内容贴边 */
+            padding: 20px 0;
             min-height: 100vh;
-            touch-action: manipulation; /* 允许滚动等触摸行为 */
-            overflow-x: hidden; /* 禁止横向滚动 */
+            touch-action: manipulation;
+            overflow-x: hidden;
         }
         .container {
             width: 100%;
@@ -40,7 +50,7 @@
             flex-direction: column;
             align-items: center;
             z-index: 100;
-            margin: 0 auto 40px; /* 水平居中，底部留空 */
+            margin: 0 auto 40px;
         }
         .header {
             background-color: #f8f9fa;
@@ -63,6 +73,7 @@
             border-radius: 50%;
             margin-right: 8px;
             object-fit: cover;
+            background-color: var(--img-placeholder-bg); /* 图片占位 */
         }
         .header-text {
             font-size: 16px;
@@ -88,6 +99,7 @@
             height: 24px;
             object-fit: cover;
             filter: invert(0) grayscale(100%) brightness(0);
+            background-color: var(--img-placeholder-bg); /* 图片占位 */
         }
         .header-btn:hover {
             background-color: rgba(0, 0, 0, 0.1);
@@ -107,6 +119,7 @@
             border: 2px solid #fff;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
             margin-bottom: 12px;
+            background-color: var(--img-placeholder-bg); /* 图片占位 */
         }
         .profile-name {
             font-size: 20px;
@@ -145,7 +158,7 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         .btn.selected {
-            box-shadow: 0 0 0 2px #ff69b4, 0 2px 8px rgba(0, 0, 0, 0.2); /* 粉色选择框 */
+            box-shadow: 0 0 0 2px #ff69b4, 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .btn-blue {
             background-color: #0277bd;
@@ -171,10 +184,9 @@
             }
             .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel, .blank-popup-panel {
                 width: 90%;
-                max-width: none; /* 移除移动端最大宽度限制 */
+                max-width: none;
             }
         }
-        /* 小屏幕高度适配，确保内容可滚动 */
         @media (max-height: 600px) {
             body {
                 padding: 10px 0;
@@ -192,7 +204,7 @@
                 font-size: 14px;
             }
         }
-        /* 弹窗基础样式 - 新增四边缩放热区 */
+        /* 弹窗基础样式 */
         .social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail, .blank-popup-detail {
             position: fixed;
             top: 0;
@@ -217,10 +229,12 @@
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 16px;
-            width: 80%; /* 默认宽度 */
-            max-width: none; /* 移除最大宽度限制，实现无限扩大 */
-            min-width: 250px; /* 最小宽度限制（不能调太小） */
-            min-height: 180px; /* 最小高度限制（不能调太小） */
+            width: var(--popup-default-width); /* 默认宽度 */
+            height: var(--popup-default-height); /* 默认高度 */
+            min-width: var(--popup-min-width); /* 最小宽度 */
+            min-height: var(--popup-min-height); /* 最小高度 */
+            max-width: none; /* 允许无限放大 */
+            max-height: none; /* 允许无限放大 */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             overflow: hidden;
             transform: translateY(20px);
@@ -229,10 +243,8 @@
             position: absolute;
             pointer-events: auto;
             cursor: default;
-            /* 缩放热区尺寸 - 容错率10px */
-            --resize-edge-size: 10px;
         }
-        /* 四边缩放热区样式 */
+        /* 四边+四角缩放热区样式 */
         .window-resize-edge {
             position: absolute;
             z-index: 10;
@@ -243,62 +255,62 @@
             top: 0;
             height: 100%;
             width: var(--resize-edge-size);
-            cursor: ew-resize; /* 水平缩放指针 */
+            cursor: ew-resize;
         }
         .window-resize-edge.right {
             right: 0;
             top: 0;
             height: 100%;
             width: var(--resize-edge-size);
-            cursor: ew-resize; /* 水平缩放指针 */
+            cursor: ew-resize;
         }
         .window-resize-edge.top {
             left: 0;
             top: 0;
             width: 100%;
             height: var(--resize-edge-size);
-            cursor: ns-resize; /* 垂直缩放指针 */
+            cursor: ns-resize;
         }
         .window-resize-edge.bottom {
             left: 0;
             bottom: 0;
             width: 100%;
             height: var(--resize-edge-size);
-            cursor: ns-resize; /* 垂直缩放指针 */
+            cursor: ns-resize;
         }
         .window-resize-edge.corner-tl {
             left: 0;
             top: 0;
             width: var(--resize-edge-size);
             height: var(--resize-edge-size);
-            cursor: nesw-resize; /* 对角线缩放指针 */
+            cursor: nesw-resize;
         }
         .window-resize-edge.corner-tr {
             right: 0;
             top: 0;
             width: var(--resize-edge-size);
             height: var(--resize-edge-size);
-            cursor: nwse-resize; /* 对角线缩放指针 */
+            cursor: nwse-resize;
         }
         .window-resize-edge.corner-bl {
             left: 0;
             bottom: 0;
             width: var(--resize-edge-size);
             height: var(--resize-edge-size);
-            cursor: nwse-resize; /* 对角线缩放指针 */
+            cursor: nwse-resize;
         }
         .window-resize-edge.corner-br {
             right: 0;
             bottom: 0;
             width: var(--resize-edge-size);
             height: var(--resize-edge-size);
-            cursor: nesw-resize; /* 对角线缩放指针 */
+            cursor: nesw-resize;
         }
         .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel, .setting-detail.active .setting-panel, .blank-popup-detail.active .blank-popup-panel {
             transform: translateY(0);
             opacity: 1;
         }
-        /* 标题栏样式（可拖动） */
+        /* 标题栏样式 */
         .panel-header {
             padding: 8px 16px;
             background-color: #f8f9fa;
@@ -340,13 +352,12 @@
         .close-btn::after {
             transform: translate(-50%, -50%) rotate(-45deg);
         }
-        /* 内容容器样式 - 无滚动条但可滚动 */
+        /* 内容容器样式 */
         .panel-content-wrapper {
             position: relative;
             width: 100%;
-            height: calc(100% - 40px); /* 减去标题栏高度 */
+            height: calc(100% - 40px);
             overflow: auto;
-            /* 隐藏滚动条 - 兼容WebKit浏览器 */
         }
         .panel-content-wrapper::-webkit-scrollbar {
             width: 0;
@@ -358,14 +369,14 @@
         .panel-content-wrapper::-webkit-scrollbar-thumb {
             background: transparent;
         }
-        /* 内容区域样式 - 自适应子元素 */
+        /* 内容区域样式 */
         .panel-content {
             padding: 16px;
             background-color: #e3f2fd;
             min-height: 100%;
             box-sizing: border-box;
         }
-        /* 空白弹窗内容样式（含文本和按钮） */
+        /* 空白弹窗内容样式 */
         .blank-popup-content {
             padding: 20px 16px;
             background-color: #e3f2fd;
@@ -376,7 +387,7 @@
             align-items: center;
             gap: 20px;
             box-sizing: border-box;
-            position: relative; /* 父容器相对定位 */
+            position: relative;
         }
         .popup-text {
             font-size: 16px;
@@ -387,9 +398,9 @@
         .popup-btn-group {
             display: flex;
             gap: 12px;
-            position: absolute; /* 绝对定位 */
-            bottom: 20px; /* 距离底部20px */
-            right: 16px; /* 距离右侧16px */
+            position: absolute;
+            bottom: 20px;
+            right: 16px;
         }
         .popup-btn {
             padding: 6px 16px;
@@ -430,7 +441,7 @@
             align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
-            cursor: pointer; /* 关闭所有窗口选项可点击 */
+            cursor: pointer;
         }
         .setting-item:last-child {
             border-bottom: none;
@@ -461,6 +472,7 @@
             border-radius: 50%;
             margin-right: 12px;
             object-fit: cover;
+            background-color: var(--img-placeholder-bg); /* 图片占位 */
         }
         .social-name, .resource-name, .fun-name {
             font-size: 16px;
@@ -625,18 +637,18 @@
         #welcomeNotification {
             position: fixed;
             top: 20px;
-            left: -300px; /* 初始隐藏在左侧 */
+            left: -300px;
             padding: 12px 24px;
             background-color: #0277bd;
             color: white;
             font-size: 16px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            z-index: 9999; /* 确保在最上层 */
-            transition: left 0.5s ease-in-out; /* 滑入滑出动画 */
+            z-index: 9999;
+            transition: left 0.5s ease-in-out;
         }
         #welcomeNotification.show {
-            left: 20px; /* 显示时滑到左侧20px位置 */
+            left: 20px;
         }
     </style>
 </head>
@@ -655,11 +667,9 @@
                 <div class="header-text">小源的网站</div>
             </div>
             <div class="header-right">
-                <!-- 音乐控制按钮（无提示文本，仅图标） -->
                 <button class="header-btn" id="musicBtn" onclick="toggleMusic()">
                     <img src="sy1.png" alt="">
                 </button>
-                <!-- 设置按钮（无提示文本，仅图标） -->
                 <button class="header-btn" id="settingBtn" onclick="openPanel('setting')">
                     <img src="shezhi.png" alt="">
                 </button>
@@ -677,10 +687,9 @@
             </div>
         </div>
     </div>
-    <!-- 社交平台弹窗（删除测试信息，内容无滚动条滑动） -->
+    <!-- 社交平台弹窗 -->
     <div class="social-detail" id="socialDetail">
         <div class="social-panel">
-            <!-- 四边+四角缩放热区（容错率10px） -->
             <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
             <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
             <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
@@ -694,7 +703,6 @@
                 <div class="panel-title">社交平台</div>
                 <div class="close-btn" onclick="hidePanel(this.closest('.social-detail'))"></div>
             </div>
-            <!-- 无滚动条滚动容器 -->
             <div class="panel-content-wrapper">
                 <div class="panel-content">
                     <div class="social-item" onclick="openKuaishouProfile()">
@@ -705,15 +713,13 @@
                         </div>
                         <div class="arrow-right"></div>
                     </div>
-                    <!-- 删除测试信息，仅保留核心内容 -->
                 </div>
             </div>
         </div>
     </div>
-    <!-- 分享资源弹窗（内容无滚动条滑动） -->
+    <!-- 分享资源弹窗 -->
     <div class="resource-detail" id="resourceDetail">
         <div class="resource-panel">
-            <!-- 四边+四角缩放热区 -->
             <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
             <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
             <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
@@ -727,7 +733,6 @@
                 <div class="panel-title">分享资源</div>
                 <div class="close-btn" onclick="hidePanel(this.closest('.resource-detail'))"></div>
             </div>
-            <!-- 无滚动条滚动容器 -->
             <div class="panel-content-wrapper">
                 <div class="panel-content">
                     <div class="resource-item" onclick="openResourceLink('https://www.123912.com/s/0RONTd-ijSj3')">
@@ -749,10 +754,9 @@
             </div>
         </div>
     </div>
-    <!-- 好玩的弹窗（内容无滚动条滑动） -->
+    <!-- 好玩的弹窗 -->
     <div class="fun-detail" id="funDetail">
         <div class="fun-panel">
-            <!-- 四边+四角缩放热区 -->
             <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
             <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
             <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
@@ -766,7 +770,6 @@
                 <div class="panel-title">好玩的</div>
                 <div class="close-btn" onclick="hidePanel(this.closest('.fun-detail'))"></div>
             </div>
-            <!-- 无滚动条滚动容器 -->
             <div class="panel-content-wrapper">
                 <div class="panel-content">
                     <div class="fun-item" onclick="openInfinitePopups()">
@@ -778,10 +781,9 @@
             </div>
         </div>
     </div>
-    <!-- 联系方式弹窗（内容无滚动条滑动） -->
+    <!-- 联系方式弹窗 -->
     <div class="contact-detail" id="contactDetail">
         <div class="contact-panel">
-            <!-- 四边+四角缩放热区 -->
             <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
             <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
             <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
@@ -795,7 +797,6 @@
                 <div class="panel-title">联系方式</div>
                 <div class="close-btn" onclick="hidePanel(this.closest('.contact-detail'))"></div>
             </div>
-            <!-- 无滚动条滚动容器 -->
             <div class="panel-content-wrapper">
                 <div class="panel-content">
                     <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: x114514-9178@outlook.com 联系</p>
@@ -803,10 +804,9 @@
             </div>
         </div>
     </div>
-    <!-- 设置弹窗（内容无滚动条滑动） -->
+    <!-- 设置弹窗 -->
     <div class="setting-detail" id="settingDetail">
         <div class="setting-panel">
-            <!-- 四边+四角缩放热区 -->
             <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
             <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
             <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
@@ -820,7 +820,6 @@
                 <div class="panel-title">设置</div>
                 <div class="close-btn" onclick="hidePanel(this.closest('.setting-detail'))"></div>
             </div>
-            <!-- 无滚动条滚动容器 -->
             <div class="panel-content-wrapper">
                 <div class="setting-content">
                     <div class="setting-item">
@@ -851,7 +850,7 @@
         const DARK_MODE_KEY = 'darkModeSetting';
         let selectedBtn = null;
         let isPanelOpen = false;
-        let currentZIndex = 2001; // 初始层级
+        let currentZIndex = 2001;
         
         // 音乐相关
         const musicElement = document.getElementById('backgroundMusic');
@@ -868,13 +867,14 @@
         // 缩放相关变量
         let isResizing = false;
         let resizeTarget = null;
-        let resizeType = ''; // left/right/top/bottom/corner-tl/corner-tr/corner-bl/corner-br
+        let resizeType = '';
         let startWidth = 0;
         let startHeight = 0;
         let startLeft = 0;
         let startTop = 0;
-        const minWidth = 250; // 最小宽度（不能调太小）
-        const minHeight = 180; // 最小高度（不能调太小）
+        // 从CSS变量获取最小宽高（统一控制）
+        const minWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-min-width'));
+        const minHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-min-height'));
         
         // 初始化
         window.onload = function() {
@@ -882,21 +882,23 @@
             initDarkMode();
             bindButtonEvents();
             bindGlobalEvents();
-            // 显示欢迎通知
             showWelcomeNotification();
+            // 图片加载完成后移除占位背景
+            document.querySelectorAll('img').forEach(img => {
+                img.onload = function() {
+                    this.style.backgroundColor = 'transparent';
+                };
+            });
         };
         
         // 欢迎通知显示逻辑
         function showWelcomeNotification() {
             const notification = document.getElementById('welcomeNotification');
-            // 延迟100ms显示，确保动画生效
             setTimeout(() => {
                 notification.classList.add('show');
             }, 100);
-            // 5秒后关闭通知
             setTimeout(() => {
                 notification.classList.remove('show');
-                // 动画结束后移除元素（可选）
                 setTimeout(() => {
                     notification.remove();
                 }, 500);
@@ -910,28 +912,22 @@
             });
         }
         
-        // 绑定全局事件（点击空白仅隐藏选择框）
+        // 绑定全局事件
         function bindGlobalEvents() {
-            // 鼠标拖动
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', stopDrag);
-            // 触摸拖动
             document.addEventListener('touchmove', dragTouch, { passive: false });
             document.addEventListener('touchend', stopDrag);
             document.addEventListener('touchcancel', stopDrag);
-            // 鼠标缩放
             document.addEventListener('mousemove', resize);
             document.addEventListener('mouseup', stopResize);
-            // 触摸缩放
             document.addEventListener('touchmove', resizeTouch, { passive: false });
             document.addEventListener('touchend', stopResize);
             document.addEventListener('touchcancel', stopResize);
-            // 点击动画
             document.addEventListener('click', addClickCircle);
-            // 点击空白处仅隐藏选择框，不关闭窗口
             document.addEventListener('click', function(event) {
                 if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.blank-popup-panel') && !event.target.closest('.header-btn')) {
-                    cancelAllSelected(); // 仅隐藏选择框
+                    cancelAllSelected();
                 }
             });
         }
@@ -1014,16 +1010,14 @@
             alert('音乐记录已清除');
         }
         
-        // 按钮选择框逻辑：第一次点击加粉色框，第二次点击执行操作
+        // 按钮选择框逻辑
         function btnClickHandle(event) {
             const currentBtn = event.currentTarget;
             const btnType = currentBtn.dataset.type;
             if (selectedBtn === currentBtn) {
-                // 第二次点击：执行操作
                 openPanel(btnType);
                 isPanelOpen = true;
             } else {
-                // 第一次点击：添加粉色选择框
                 cancelAllSelected();
                 currentBtn.classList.add('selected');
                 selectedBtn = currentBtn;
@@ -1031,7 +1025,7 @@
             }
         }
         
-        // 打开面板（默认宽度，内容自适应）
+        // 打开面板
         function openPanel(type) {
             let panelId = '';
             switch(type) {
@@ -1042,26 +1036,25 @@
                 case 'setting': panelId = 'settingDetail'; break;
             }
             const originalPanel = document.getElementById(panelId);
-            const panelWidth = originalPanel.querySelector('[class$="-panel"]').offsetWidth;
-            const panelHeight = originalPanel.querySelector('[class$="-panel"]').offsetHeight;
+            // 从CSS变量获取默认宽高
+            const popupDefaultWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-width'));
+            const popupDefaultHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-height'));
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const centerLeft = (screenWidth - panelWidth) / 2;
-            const centerTop = (screenHeight - panelHeight) / 2;
-            // 复制面板实现重复打开，使用默认宽度
+            const centerLeft = (screenWidth - popupDefaultWidth) / 2;
+            const centerTop = (screenHeight - popupDefaultHeight) / 2;
+            
             const newPanel = originalPanel.cloneNode(true);
             const newPanelId = panelId + '_' + Date.now();
             newPanel.id = newPanelId;
             const newPanelElement = newPanel.querySelector('[class$="-panel"]');
             
-            // 强制居中定位，使用默认宽度
             newPanelElement.style.left = `${centerLeft}px`;
             newPanelElement.style.top = `${centerTop}px`;
-            newPanelElement.style.width = `${panelWidth}px`; // 保持默认宽度
-            newPanelElement.style.height = `${panelHeight}px`; // 保持默认高度
+            newPanelElement.style.width = `${popupDefaultWidth}px`;
+            newPanelElement.style.height = `${popupDefaultHeight}px`;
             newPanelElement.style.zIndex = currentZIndex++;
             
-            // 绑定新面板的事件（缩放+拖动）
             const resizeEdges = newPanelElement.querySelectorAll('.window-resize-edge');
             resizeEdges.forEach(edge => {
                 let edgeType = '';
@@ -1085,7 +1078,6 @@
             const newCloseBtn = newPanelElement.querySelector('.close-btn');
             newCloseBtn.onclick = () => hidePanel(newPanel);
             
-            // 添加到页面并显示
             document.body.appendChild(newPanel);
             setTimeout(() => {
                 newPanel.classList.add('active');
@@ -1100,31 +1092,28 @@
             }, 300);
         }
         
-        // 关闭所有窗口：仅移除克隆的窗口，保留原始模板
+        // 关闭所有窗口
         function closeAllWindows() {
-            // 关闭所有克隆的系统面板
             document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
-                if (panel.id.includes('_')) { // 仅移除克隆的面板
+                if (panel.id.includes('_')) {
                     panel.classList.remove('active');
                     setTimeout(() => panel.remove(), 300);
                 } else {
-                    panel.classList.remove('active'); // 原始面板仅隐藏不删除
+                    panel.classList.remove('active');
                 }
             });
             
-            // 关闭所有空白弹窗
             document.querySelectorAll('.blank-popup-detail').forEach(popup => {
                 popup.classList.remove('active');
                 setTimeout(() => popup.remove(), 300);
             });
             
-            // 取消按钮选中状态
             cancelAllSelected();
             selectedBtn = null;
             isPanelOpen = false;
         }
         
-        // 取消按钮选中状态（隐藏粉色选择框）
+        // 取消按钮选中状态
         function cancelAllSelected() {
             document.querySelectorAll('.btn').forEach(btn => {
                 btn.classList.remove('selected');
@@ -1153,48 +1142,33 @@
             setTimeout(() => circle.remove(), 1000);
         }
         
-        // 每次打开空白弹窗都读取wenben.txt（确保每次文本最新）
-        async function getRandomTextFromFile() {
-            try {
-                const response = await fetch('wenben.txt');
-                if (!response.ok) throw new Error('文件未找到');
-                const text = await response.text();
-                const lines = text.split('\n').filter(line => line.trim() !== ''); // 过滤空行
-                return lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)].trim() : '错误';
-            } catch (error) {
-                return '错误';
-            }
-        }
-        
-        // 无限弹窗（内容无滚动条滑动，标题为"提示"）
+        // 无限弹窗
         async function openInfinitePopups() {
-            const popupWidth = 300; // 默认宽度
-            const popupHeight = 180; // 默认高度
+            // 从CSS变量获取默认宽高
+            const popupDefaultWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-width'));
+            const popupDefaultHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-height'));
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const centerLeft = (screenWidth - popupWidth) / 2;
-            const centerTop = (screenHeight - popupHeight) / 2;
+            const centerLeft = (screenWidth - popupDefaultWidth) / 2;
+            const centerTop = (screenHeight - popupDefaultHeight) / 2;
+            
             for (let i = 0; i < 25; i++) {
-                // 每次打开都读取文本（确保实时获取最新内容）
                 const popupText = await getRandomTextFromFile();
                 
                 setTimeout(() => {
-                    // 创建空白弹窗
                     const popup = document.createElement('div');
                     popup.className = 'blank-popup-detail';
                     popup.style.position = 'fixed';
                     popup.style.left = '0';
                     popup.style.top = '0';
                     
-                    // 初始居中，小范围偏移避免重叠
                     const randomOffsetX = (Math.random() - 0.5) * 50;
                     const randomOffsetY = (Math.random() - 0.5) * 50;
                     const finalLeft = centerLeft + randomOffsetX;
                     const finalTop = centerTop + randomOffsetY;
-                    // 弹窗标题改为"提示"，添加四边缩放热区，无滚动条滚动容器
+                    
                     popup.innerHTML = `
-                        <div class="blank-popup-panel" style="left: ${finalLeft}px; top: ${finalTop}px; width: ${popupWidth}px; height: ${popupHeight}px; z-index: ${currentZIndex++};">
-                            <!-- 四边+四角缩放热区 -->
+                        <div class="blank-popup-panel" style="left: ${finalLeft}px; top: ${finalTop}px; width: ${popupDefaultWidth}px; height: ${popupDefaultHeight}px; z-index: ${currentZIndex++};">
                             <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
                             <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
                             <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
@@ -1208,7 +1182,6 @@
                                 <div class="panel-title">提示</div>
                                 <div class="close-btn" onclick="hidePanel(this.closest('.blank-popup-detail'))"></div>
                             </div>
-                            <!-- 无滚动条滚动容器 -->
                             <div class="panel-content-wrapper">
                                 <div class="blank-popup-content">
                                     <p class="popup-text">${popupText}</p>
@@ -1221,11 +1194,23 @@
                         </div>
                     `;
                     document.body.appendChild(popup);
-                    // 触发显示动画
                     setTimeout(() => {
                         popup.classList.add('active');
                     }, 10);
-                }, i * 200); // 0.2秒间隔
+                }, i * 200);
+            }
+        }
+        
+        // 获取弹窗文本
+        async function getRandomTextFromFile() {
+            try {
+                const response = await fetch('wenben.txt');
+                if (!response.ok) throw new Error('文件未找到');
+                const text = await response.text();
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                return lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)].trim() : '错误';
+            } catch (error) {
+                return '错误';
             }
         }
         
@@ -1235,7 +1220,6 @@
             isDragging = true;
             dragTarget = target;
             dragTarget.classList.add('panel-dragging');
-            // 记录初始位置
             startX = event.clientX;
             startY = event.clientY;
             const rect = dragTarget.getBoundingClientRect();
@@ -1252,7 +1236,6 @@
             isDragging = true;
             dragTarget = target;
             dragTarget.classList.add('panel-dragging');
-            // 记录初始位置
             startX = touch.clientX;
             startY = touch.clientY;
             const rect = dragTarget.getBoundingClientRect();
@@ -1262,12 +1245,11 @@
             event.preventDefault();
         }
         
-        // 鼠标拖动中（允许拖到屏幕外）
+        // 鼠标拖动中
         function drag(event) {
             if (!isDragging || !dragTarget) return;
             const offsetX = event.clientX - startX;
             const offsetY = event.clientY - startY;
-            // 自由移动，不限制边界
             const newLeft = targetLeft + offsetX;
             const newTop = targetTop + offsetY;
             dragTarget.style.left = `${newLeft}px`;
@@ -1275,13 +1257,12 @@
             event.stopPropagation();
         }
         
-        // 触摸拖动中（允许拖到屏幕外）
+        // 触摸拖动中
         function dragTouch(event) {
             if (!isDragging || !dragTarget) return;
             const touch = event.touches[0];
             const offsetX = touch.clientX - startX;
             const offsetY = touch.clientY - startY;
-            // 自由移动，不限制边界
             const newLeft = targetLeft + offsetX;
             const newTop = targetTop + offsetY;
             dragTarget.style.left = `${newLeft}px`;
@@ -1299,14 +1280,13 @@
             dragTarget = null;
         }
         
-        // 鼠标缩放开始（容错率10px）
+        // 鼠标缩放开始
         function startResize(event, target, type) {
             if (isDragging) return;
             isResizing = true;
             resizeTarget = target;
             resizeType = type;
             resizeTarget.classList.add('panel-resizing');
-            // 记录初始尺寸和位置
             const rect = resizeTarget.getBoundingClientRect();
             startWidth = rect.width;
             startHeight = rect.height;
@@ -1318,7 +1298,7 @@
             event.preventDefault();
         }
         
-        // 触摸缩放开始（容错率10px）
+        // 触摸缩放开始
         function startResizeTouch(event, target, type) {
             if (isDragging) return;
             const touch = event.touches[0];
@@ -1326,7 +1306,6 @@
             resizeTarget = target;
             resizeType = type;
             resizeTarget.classList.add('panel-resizing');
-            // 记录初始尺寸和位置
             const rect = resizeTarget.getBoundingClientRect();
             startWidth = rect.width;
             startHeight = rect.height;
@@ -1338,7 +1317,7 @@
             event.preventDefault();
         }
         
-        // 鼠标缩放中（四边缩放，无限拉大，限制最小尺寸）
+        // 鼠标缩放中
         function resize(event) {
             if (!isResizing || !resizeTarget) return;
             const offsetX = event.clientX - startX;
@@ -1347,14 +1326,14 @@
             let newHeight = startHeight;
             let newLeft = startLeft;
             let newTop = startTop;
-            // 根据缩放类型调整尺寸和位置
+            
             switch(resizeType) {
                 case 'left':
                     newWidth = Math.max(minWidth, startWidth - offsetX);
                     newLeft = startLeft + offsetX;
                     break;
                 case 'right':
-                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
                     break;
                 case 'top':
                     newHeight = Math.max(minHeight, startHeight - offsetY);
@@ -1370,7 +1349,7 @@
                     newTop = startTop + offsetY;
                     break;
                 case 'corner-tr':
-                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
                     newHeight = Math.max(minHeight, startHeight - offsetY);
                     newTop = startTop + offsetY;
                     break;
@@ -1380,11 +1359,11 @@
                     newLeft = startLeft + offsetX;
                     break;
                 case 'corner-br':
-                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
                     newHeight = Math.max(minHeight, startHeight + offsetY);
                     break;
             }
-            // 应用新尺寸和位置
+            
             resizeTarget.style.width = `${newWidth}px`;
             resizeTarget.style.height = `${newHeight}px`;
             resizeTarget.style.left = `${newLeft}px`;
@@ -1393,7 +1372,7 @@
             event.preventDefault();
         }
         
-        // 触摸缩放中（四边缩放，无限拉大，限制最小尺寸）
+        // 触摸缩放中
         function resizeTouch(event) {
             if (!isResizing || !resizeTarget) return;
             const touch = event.touches[0];
@@ -1403,14 +1382,14 @@
             let newHeight = startHeight;
             let newLeft = startLeft;
             let newTop = startTop;
-            // 根据缩放类型调整尺寸和位置
+            
             switch(resizeType) {
                 case 'left':
                     newWidth = Math.max(minWidth, startWidth - offsetX);
                     newLeft = startLeft + offsetX;
                     break;
                 case 'right':
-                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
                     break;
                 case 'top':
                     newHeight = Math.max(minHeight, startHeight - offsetY);
@@ -1426,7 +1405,7 @@
                     newTop = startTop + offsetY;
                     break;
                 case 'corner-tr':
-                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
                     newHeight = Math.max(minHeight, startHeight - offsetY);
                     newTop = startTop + offsetY;
                     break;
@@ -1436,11 +1415,11 @@
                     newLeft = startLeft + offsetX;
                     break;
                 case 'corner-br':
-                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
+                    newWidth = Math.max(minWidth, startWidth + offsetX);
                     newHeight = Math.max(minHeight, startHeight + offsetY);
                     break;
             }
-            // 应用新尺寸和位置
+            
             resizeTarget.style.width = `${newWidth}px`;
             resizeTarget.style.height = `${newHeight}px`;
             resizeTarget.style.left = `${newLeft}px`;
