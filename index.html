@@ -24,12 +24,10 @@
             background-attachment: fixed;
             font-family: 'Minecraft', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 20px 0; /* 上下留空，避免内容贴边 */
             min-height: 100vh;
-            touch-action: none; /* 禁用默认触摸行为 */
+            touch-action: manipulation; /* 允许滚动等触摸行为 */
+            overflow-x: hidden; /* 禁止横向滚动 */
         }
         .container {
             width: 100%;
@@ -42,6 +40,7 @@
             flex-direction: column;
             align-items: center;
             z-index: 100;
+            margin: 0 auto 40px; /* 水平居中，底部留空 */
         }
         .header {
             background-color: #f8f9fa;
@@ -172,7 +171,25 @@
             }
             .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel, .blank-popup-panel {
                 width: 90%;
-                max-width: 280px;
+                max-width: none; /* 移除移动端最大宽度限制 */
+            }
+        }
+        /* 小屏幕高度适配，确保内容可滚动 */
+        @media (max-height: 600px) {
+            body {
+                padding: 10px 0;
+            }
+            .container {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+            }
+            .btn {
+                padding: 10px;
+                font-size: 14px;
             }
         }
         /* 弹窗基础样式 - 新增四边缩放热区 */
@@ -201,7 +218,7 @@
             border: 1px solid #ccc;
             border-radius: 16px;
             width: 80%; /* 默认宽度 */
-            max-width: 300px; /* 默认最大宽度 */
+            max-width: none; /* 移除最大宽度限制，实现无限扩大 */
             min-width: 250px; /* 最小宽度限制（不能调太小） */
             min-height: 180px; /* 最小高度限制（不能调太小） */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -359,6 +376,7 @@
             align-items: center;
             gap: 20px;
             box-sizing: border-box;
+            position: relative; /* 父容器相对定位 */
         }
         .popup-text {
             font-size: 16px;
@@ -369,7 +387,9 @@
         .popup-btn-group {
             display: flex;
             gap: 12px;
-            align-self: flex-end;
+            position: absolute; /* 绝对定位 */
+            bottom: 20px; /* 距离底部20px */
+            right: 16px; /* 距离右侧16px */
         }
         .popup-btn {
             padding: 6px 16px;
@@ -545,13 +565,6 @@
             border-top-color: #d1d5db;
             border-right-color: #d1d5db;
         }
-        body.dark-mode .social-avatar,
-        body.dark-mode .resource-icon,
-        body.dark-mode .fun-icon,
-        body.dark-mode .header-icon,
-        body.dark-mode .profile-avatar {
-            filter: none;
-        }
         body.dark-mode .popup-btn-cancel {
             background-color: #4b5563;
             color: #f3f4f6;
@@ -608,9 +621,29 @@
         .panel-resizing {
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
+        /* 左上角欢迎通知样式 */
+        #welcomeNotification {
+            position: fixed;
+            top: 20px;
+            left: -300px; /* 初始隐藏在左侧 */
+            padding: 12px 24px;
+            background-color: #0277bd;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 9999; /* 确保在最上层 */
+            transition: left 0.5s ease-in-out; /* 滑入滑出动画 */
+        }
+        #welcomeNotification.show {
+            left: 20px; /* 显示时滑到左侧20px位置 */
+        }
     </style>
 </head>
 <body>
+    <!-- 欢迎通知 -->
+    <div id="welcomeNotification">欢迎</div>
+    
     <!-- 音频播放 -->
     <audio id="backgroundMusic" src="Music.mp3" loop>
         您的浏览器不支持音频播放，请升级浏览器。
@@ -644,7 +677,6 @@
             </div>
         </div>
     </div>
-
     <!-- 社交平台弹窗（删除测试信息，内容无滚动条滑动） -->
     <div class="social-detail" id="socialDetail">
         <div class="social-panel">
@@ -678,7 +710,6 @@
             </div>
         </div>
     </div>
-
     <!-- 分享资源弹窗（内容无滚动条滑动） -->
     <div class="resource-detail" id="resourceDetail">
         <div class="resource-panel">
@@ -718,7 +749,6 @@
             </div>
         </div>
     </div>
-
     <!-- 好玩的弹窗（内容无滚动条滑动） -->
     <div class="fun-detail" id="funDetail">
         <div class="fun-panel">
@@ -748,7 +778,6 @@
             </div>
         </div>
     </div>
-
     <!-- 联系方式弹窗（内容无滚动条滑动） -->
     <div class="contact-detail" id="contactDetail">
         <div class="contact-panel">
@@ -774,7 +803,6 @@
             </div>
         </div>
     </div>
-
     <!-- 设置弹窗（内容无滚动条滑动） -->
     <div class="setting-detail" id="settingDetail">
         <div class="setting-panel">
@@ -817,7 +845,6 @@
             </div>
         </div>
     </div>
-
     <script>
         // 基础变量
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -848,22 +875,41 @@
         let startTop = 0;
         const minWidth = 250; // 最小宽度（不能调太小）
         const minHeight = 180; // 最小高度（不能调太小）
-
+        
         // 初始化
         window.onload = function() {
             setMusicPaused();
             initDarkMode();
             bindButtonEvents();
             bindGlobalEvents();
+            // 显示欢迎通知
+            showWelcomeNotification();
         };
-
+        
+        // 欢迎通知显示逻辑
+        function showWelcomeNotification() {
+            const notification = document.getElementById('welcomeNotification');
+            // 延迟100ms显示，确保动画生效
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            // 5秒后关闭通知
+            setTimeout(() => {
+                notification.classList.remove('show');
+                // 动画结束后移除元素（可选）
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 5000);
+        }
+        
         // 绑定按钮点击事件
         function bindButtonEvents() {
             document.querySelectorAll('.btn').forEach(btn => {
                 btn.addEventListener('click', btnClickHandle);
             });
         }
-
+        
         // 绑定全局事件（点击空白仅隐藏选择框）
         function bindGlobalEvents() {
             // 鼠标拖动
@@ -889,14 +935,12 @@
                 }
             });
         }
-
+        
         // 深色模式初始化
         function initDarkMode() {
             const savedSetting = localStorage.getItem(DARK_MODE_KEY);
             const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
             document.body.classList.remove('dark-mode');
-
             if (savedSetting === 'dark') {
                 enableDarkMode();
                 darkModeToggle.checked = true;
@@ -913,16 +957,16 @@
                 }
             }
         }
-
+        
         function enableDarkMode() {
             document.body.classList.add('dark-mode');
         }
-
+        
         function disableDarkMode() {
             document.body.classList.remove('dark-mode');
             document.body.offsetHeight;
         }
-
+        
         function toggleDarkMode() {
             const isDark = document.body.classList.contains('dark-mode');
             if (isDark) {
@@ -935,13 +979,13 @@
                 darkModeToggle.checked = true;
             }
         }
-
+        
         function resetDarkModeToSystem() {
             localStorage.removeItem(DARK_MODE_KEY);
             initDarkMode();
             alert('已恢复为系统默认模式');
         }
-
+        
         // 音乐控制
         function toggleMusic() {
             if (musicElement.paused) {
@@ -957,24 +1001,23 @@
                 localStorage.setItem('musicState', 'paused');
             }
         }
-
+        
         function setMusicPaused() {
             musicElement.pause();
             musicBtnImg.src = 'sy1.png';
             localStorage.setItem('musicState', 'paused');
         }
-
+        
         function clearMusicStorage() {
             localStorage.removeItem('musicState');
             setMusicPaused();
             alert('音乐记录已清除');
         }
-
+        
         // 按钮选择框逻辑：第一次点击加粉色框，第二次点击执行操作
         function btnClickHandle(event) {
             const currentBtn = event.currentTarget;
             const btnType = currentBtn.dataset.type;
-
             if (selectedBtn === currentBtn) {
                 // 第二次点击：执行操作
                 openPanel(btnType);
@@ -987,7 +1030,7 @@
                 isPanelOpen = false;
             }
         }
-
+        
         // 打开面板（默认宽度，内容自适应）
         function openPanel(type) {
             let panelId = '';
@@ -998,7 +1041,6 @@
                 case 'contact': panelId = 'contactDetail'; break;
                 case 'setting': panelId = 'settingDetail'; break;
             }
-
             const originalPanel = document.getElementById(panelId);
             const panelWidth = originalPanel.querySelector('[class$="-panel"]').offsetWidth;
             const panelHeight = originalPanel.querySelector('[class$="-panel"]').offsetHeight;
@@ -1006,7 +1048,6 @@
             const screenHeight = window.innerHeight;
             const centerLeft = (screenWidth - panelWidth) / 2;
             const centerTop = (screenHeight - panelHeight) / 2;
-
             // 复制面板实现重复打开，使用默认宽度
             const newPanel = originalPanel.cloneNode(true);
             const newPanelId = panelId + '_' + Date.now();
@@ -1050,7 +1091,7 @@
                 newPanel.classList.add('active');
             }, 10);
         }
-
+        
         // 隐藏单个面板
         function hidePanel(panelElement) {
             panelElement.classList.remove('active');
@@ -1058,7 +1099,7 @@
                 panelElement.remove();
             }, 300);
         }
-
+        
         // 关闭所有窗口：仅移除克隆的窗口，保留原始模板
         function closeAllWindows() {
             // 关闭所有克隆的系统面板
@@ -1082,7 +1123,7 @@
             selectedBtn = null;
             isPanelOpen = false;
         }
-
+        
         // 取消按钮选中状态（隐藏粉色选择框）
         function cancelAllSelected() {
             document.querySelectorAll('.btn').forEach(btn => {
@@ -1090,17 +1131,17 @@
             });
             selectedBtn = null;
         }
-
+        
         // 打开快手主页
         function openKuaishouProfile() {
             window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
         }
-
+        
         // 打开资源链接
         function openResourceLink(url) {
             window.open(url, '_blank', 'noopener noreferrer');
         }
-
+        
         // 点击动画
         function addClickCircle(event) {
             const circle = document.createElement('div');
@@ -1111,7 +1152,7 @@
             circle.classList.add('animate');
             setTimeout(() => circle.remove(), 1000);
         }
-
+        
         // 每次打开空白弹窗都读取wenben.txt（确保每次文本最新）
         async function getRandomTextFromFile() {
             try {
@@ -1124,7 +1165,7 @@
                 return '错误';
             }
         }
-
+        
         // 无限弹窗（内容无滚动条滑动，标题为"提示"）
         async function openInfinitePopups() {
             const popupWidth = 300; // 默认宽度
@@ -1133,7 +1174,6 @@
             const screenHeight = window.innerHeight;
             const centerLeft = (screenWidth - popupWidth) / 2;
             const centerTop = (screenHeight - popupHeight) / 2;
-
             for (let i = 0; i < 25; i++) {
                 // 每次打开都读取文本（确保实时获取最新内容）
                 const popupText = await getRandomTextFromFile();
@@ -1151,7 +1191,6 @@
                     const randomOffsetY = (Math.random() - 0.5) * 50;
                     const finalLeft = centerLeft + randomOffsetX;
                     const finalTop = centerTop + randomOffsetY;
-
                     // 弹窗标题改为"提示"，添加四边缩放热区，无滚动条滚动容器
                     popup.innerHTML = `
                         <div class="blank-popup-panel" style="left: ${finalLeft}px; top: ${finalTop}px; width: ${popupWidth}px; height: ${popupHeight}px; z-index: ${currentZIndex++};">
@@ -1181,9 +1220,7 @@
                             </div>
                         </div>
                     `;
-
                     document.body.appendChild(popup);
-
                     // 触发显示动画
                     setTimeout(() => {
                         popup.classList.add('active');
@@ -1191,82 +1228,68 @@
                 }, i * 200); // 0.2秒间隔
             }
         }
-
+        
         // 鼠标拖动开始
         function startDrag(event, target) {
             if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
-
             isDragging = true;
             dragTarget = target;
             dragTarget.classList.add('panel-dragging');
-
             // 记录初始位置
             startX = event.clientX;
             startY = event.clientY;
             const rect = dragTarget.getBoundingClientRect();
             targetLeft = rect.left;
             targetTop = rect.top;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 触摸拖动开始
         function startDragTouch(event, target) {
             if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
-
             const touch = event.touches[0];
             isDragging = true;
             dragTarget = target;
             dragTarget.classList.add('panel-dragging');
-
             // 记录初始位置
             startX = touch.clientX;
             startY = touch.clientY;
             const rect = dragTarget.getBoundingClientRect();
             targetLeft = rect.left;
             targetTop = rect.top;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 鼠标拖动中（允许拖到屏幕外）
         function drag(event) {
             if (!isDragging || !dragTarget) return;
-
             const offsetX = event.clientX - startX;
             const offsetY = event.clientY - startY;
-
             // 自由移动，不限制边界
             const newLeft = targetLeft + offsetX;
             const newTop = targetTop + offsetY;
-
             dragTarget.style.left = `${newLeft}px`;
             dragTarget.style.top = `${newTop}px`;
-
             event.stopPropagation();
         }
-
+        
         // 触摸拖动中（允许拖到屏幕外）
         function dragTouch(event) {
             if (!isDragging || !dragTarget) return;
-
             const touch = event.touches[0];
             const offsetX = touch.clientX - startX;
             const offsetY = touch.clientY - startY;
-
             // 自由移动，不限制边界
             const newLeft = targetLeft + offsetX;
             const newTop = targetTop + offsetY;
-
             dragTarget.style.left = `${newLeft}px`;
             dragTarget.style.top = `${newTop}px`;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 停止拖动
         function stopDrag() {
             if (dragTarget) {
@@ -1275,16 +1298,14 @@
             isDragging = false;
             dragTarget = null;
         }
-
+        
         // 鼠标缩放开始（容错率10px）
         function startResize(event, target, type) {
             if (isDragging) return;
-
             isResizing = true;
             resizeTarget = target;
             resizeType = type;
             resizeTarget.classList.add('panel-resizing');
-
             // 记录初始尺寸和位置
             const rect = resizeTarget.getBoundingClientRect();
             startWidth = rect.width;
@@ -1293,21 +1314,18 @@
             startTop = rect.top;
             startX = event.clientX;
             startY = event.clientY;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 触摸缩放开始（容错率10px）
         function startResizeTouch(event, target, type) {
             if (isDragging) return;
-
             const touch = event.touches[0];
             isResizing = true;
             resizeTarget = target;
             resizeType = type;
             resizeTarget.classList.add('panel-resizing');
-
             // 记录初始尺寸和位置
             const rect = resizeTarget.getBoundingClientRect();
             startWidth = rect.width;
@@ -1316,22 +1334,19 @@
             startTop = rect.top;
             startX = touch.clientX;
             startY = touch.clientY;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 鼠标缩放中（四边缩放，无限拉大，限制最小尺寸）
         function resize(event) {
             if (!isResizing || !resizeTarget) return;
-
             const offsetX = event.clientX - startX;
             const offsetY = event.clientY - startY;
             let newWidth = startWidth;
             let newHeight = startHeight;
             let newLeft = startLeft;
             let newTop = startTop;
-
             // 根据缩放类型调整尺寸和位置
             switch(resizeType) {
                 case 'left':
@@ -1339,7 +1354,7 @@
                     newLeft = startLeft + offsetX;
                     break;
                 case 'right':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
                     break;
                 case 'top':
                     newHeight = Math.max(minHeight, startHeight - offsetY);
@@ -1355,7 +1370,7 @@
                     newTop = startTop + offsetY;
                     break;
                 case 'corner-tr':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
                     newHeight = Math.max(minHeight, startHeight - offsetY);
                     newTop = startTop + offsetY;
                     break;
@@ -1365,25 +1380,22 @@
                     newLeft = startLeft + offsetX;
                     break;
                 case 'corner-br':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
                     newHeight = Math.max(minHeight, startHeight + offsetY);
                     break;
             }
-
             // 应用新尺寸和位置
             resizeTarget.style.width = `${newWidth}px`;
             resizeTarget.style.height = `${newHeight}px`;
             resizeTarget.style.left = `${newLeft}px`;
             resizeTarget.style.top = `${newTop}px`;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 触摸缩放中（四边缩放，无限拉大，限制最小尺寸）
         function resizeTouch(event) {
             if (!isResizing || !resizeTarget) return;
-
             const touch = event.touches[0];
             const offsetX = touch.clientX - startX;
             const offsetY = touch.clientY - startY;
@@ -1391,7 +1403,6 @@
             let newHeight = startHeight;
             let newLeft = startLeft;
             let newTop = startTop;
-
             // 根据缩放类型调整尺寸和位置
             switch(resizeType) {
                 case 'left':
@@ -1399,7 +1410,7 @@
                     newLeft = startLeft + offsetX;
                     break;
                 case 'right':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
                     break;
                 case 'top':
                     newHeight = Math.max(minHeight, startHeight - offsetY);
@@ -1415,7 +1426,7 @@
                     newTop = startTop + offsetY;
                     break;
                 case 'corner-tr':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
                     newHeight = Math.max(minHeight, startHeight - offsetY);
                     newTop = startTop + offsetY;
                     break;
@@ -1425,21 +1436,19 @@
                     newLeft = startLeft + offsetX;
                     break;
                 case 'corner-br':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
+                    newWidth = Math.max(minWidth, startWidth + offsetX); // 宽度可无限扩大
                     newHeight = Math.max(minHeight, startHeight + offsetY);
                     break;
             }
-
             // 应用新尺寸和位置
             resizeTarget.style.width = `${newWidth}px`;
             resizeTarget.style.height = `${newHeight}px`;
             resizeTarget.style.left = `${newLeft}px`;
             resizeTarget.style.top = `${newTop}px`;
-
             event.stopPropagation();
             event.preventDefault();
         }
-
+        
         // 停止缩放
         function stopResize() {
             if (resizeTarget) {
