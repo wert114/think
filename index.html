@@ -8,17 +8,108 @@
     <link rel="shortcut icon" href="icon.png" type="image/png">
     
     <style>
-        /* 全局变量定义 - 统一控制宽高，修改此处即可 */
-        :root {
-            --popup-default-width: 320px;    /* 弹窗默认宽度 */
-            --popup-default-height: 200px;   /* 弹窗默认高度 */
-            --popup-min-width: 100px;        /* 弹窗最小宽度 */
-            --popup-min-height: 60px;       /* 弹窗最小高度 */
-            --resize-edge-size: 10px;        /* 缩放热区尺寸 */
-            --img-placeholder-bg: #e3f2fd;   /* 图片加载占位背景色（浅蓝色） */
+        /* 加载界面样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        /* 引入Minecraft字体 */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* 最高层级，覆盖所有内容 */
+            transition: opacity 0.5s ease;
+        }
+        
+        .image-container {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .jumping-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            animation: jump 1.5s ease-in-out infinite;
+        }
+        
+        .progress-container {
+            width: 80%;
+            max-width: 400px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #ff69b4;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .percentage {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+        }
+        
+        @keyframes jump {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+        
+        /* 主网页样式 */
+        :root {
+            --popup-default-width: 320px;
+            --popup-default-height: 200px;
+            --popup-min-width: 100px;
+            --popup-min-height: 60px;
+            --resize-edge-size: 10px;
+            --img-placeholder-bg: #e3f2fd;
+            
+            --theme-color: #0277bd;
+            --theme-light: #e3f2fd;
+            --theme-opposite: #ff69b4;
+        }
+        
+        body.pink-theme {
+            --theme-color: #ff69b4;
+            --theme-light: #ffe6f2;
+            --theme-opposite: #0277bd;
+        }
+        
         @font-face {
             font-family: 'Minecraft';
             src: url('Minecraft.ttf') format('truetype');
@@ -27,22 +118,23 @@
         }
         
         body {
-            background-image: url("beijing.png");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
             font-family: 'Minecraft', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 20px 0;
             min-height: 100vh;
             touch-action: manipulation;
             overflow-x: hidden;
+            background-image: url("beijing.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
+        
         .container {
             width: 100%;
             max-width: 400px;
-            background-color: rgba(227, 242, 253, 0.9);
+            background-color: var(--theme-light);
             border-radius: 32px;
             padding: 20px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -51,7 +143,10 @@
             align-items: center;
             z-index: 100;
             margin: 0 auto 40px;
+            position: relative;
+            display: none; /* 初始隐藏，加载完成后显示 */
         }
+        
         .header {
             background-color: #f8f9fa;
             width: 100%;
@@ -63,27 +158,32 @@
             border-radius: 16px;
             margin-bottom: 20px;
         }
+        
         .header-left {
             display: flex;
             align-items: center;
         }
+        
         .header-icon {
             width: 20px;
             height: 20px;
             border-radius: 50%;
             margin-right: 8px;
             object-fit: cover;
-            background-color: var(--img-placeholder-bg); /* 图片占位 */
+            background-color: var(--img-placeholder-bg);
         }
+        
         .header-text {
             font-size: 16px;
             font-weight: 500;
         }
+        
         .header-right {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+        
         .header-btn {
             width: 24px;
             height: 24px;
@@ -94,16 +194,19 @@
             border-radius: 4px;
             transition: background-color 0.2s;
         }
+        
         .header-btn img {
             width: 24px;
             height: 24px;
             object-fit: cover;
             filter: invert(0) grayscale(100%) brightness(0);
-            background-color: var(--img-placeholder-bg); /* 图片占位 */
+            background-color: var(--img-placeholder-bg);
         }
+        
         .header-btn:hover {
             background-color: rgba(0, 0, 0, 0.1);
         }
+        
         .profile {
             display: flex;
             flex-direction: column;
@@ -111,6 +214,7 @@
             width: 100%;
             margin-bottom: 20px;
         }
+        
         .profile-avatar {
             width: 100px;
             height: 100px;
@@ -119,18 +223,21 @@
             border: 2px solid #fff;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
             margin-bottom: 12px;
-            background-color: var(--img-placeholder-bg); /* 图片占位 */
+            background-color: var(--img-placeholder-bg);
         }
+        
         .profile-name {
             font-size: 20px;
-            color: #0277bd;
+            color: var(--theme-color);
             margin-bottom: 4px;
         }
+        
         .profile-english-name {
             font-size: 10px;
             color: #000;
             margin-bottom: 16px;
         }
+        
         .button-container {
             background-color: #fff;
             padding: 16px;
@@ -139,6 +246,7 @@
             width: 100%;
             max-width: 260px;
         }
+        
         .btn {
             display: block;
             width: 100%;
@@ -152,29 +260,58 @@
             overflow: hidden;
             transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
             outline: none;
+            z-index: 110;
         }
+        
         .btn:active {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
+        
         .btn.selected {
-            box-shadow: 0 0 0 2px #ff69b4, 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 0 2px var(--theme-opposite), 0 2px 8px rgba(0, 0, 0, 0.2);
         }
+        
         .btn-blue {
-            background-color: #0277bd;
+            background-color: var(--theme-color);
             color: white;
         }
+        
         .btn-blue:hover {
             background-color: #01579b;
         }
+        
+        body.pink-theme .btn-blue:hover {
+            background-color: #e65c9a;
+        }
+        
         .btn-white {
             background-color: white;
             color: #212121;
             border: 1px solid #e0e0e0;
         }
+        
         .btn-white:hover {
             background-color: #f5f5f5;
         }
+        
+        .theme-btn-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        
+        .blue-theme-icon {
+            background-color: #0277bd;
+        }
+        
+        .pink-theme-icon {
+            background-color: #ff69b4;
+        }
+        
         @media (max-width: 375px) {
             .container {
                 max-width: 95%;
@@ -187,6 +324,7 @@
                 max-width: none;
             }
         }
+        
         @media (max-height: 600px) {
             body {
                 padding: 10px 0;
@@ -204,7 +342,7 @@
                 font-size: 14px;
             }
         }
-        /* 弹窗基础样式 */
+        
         .social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail, .blank-popup-detail {
             position: fixed;
             top: 0;
@@ -221,20 +359,22 @@
             transition: opacity 0.3s ease, visibility 0.3s ease;
             pointer-events: none;
         }
+        
         .social-detail.active, .resource-detail.active, .contact-detail.active, .fun-detail.active, .setting-detail.active, .blank-popup-detail.active {
             opacity: 1;
             visibility: visible;
         }
+        
         .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel, .blank-popup-panel {
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 16px;
-            width: var(--popup-default-width); /* 默认宽度 */
-            height: var(--popup-default-height); /* 默认高度 */
-            min-width: var(--popup-min-width); /* 最小宽度 */
-            min-height: var(--popup-min-height); /* 最小高度 */
-            max-width: none; /* 允许无限放大 */
-            max-height: none; /* 允许无限放大 */
+            width: var(--popup-default-width);
+            height: var(--popup-default-height);
+            min-width: var(--popup-min-width);
+            min-height: var(--popup-min-height);
+            max-width: none;
+            max-height: none;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             overflow: hidden;
             transform: translateY(20px);
@@ -244,12 +384,13 @@
             pointer-events: auto;
             cursor: default;
         }
-        /* 四边+四角缩放热区样式 */
+        
         .window-resize-edge {
             position: absolute;
             z-index: 10;
             touch-action: none;
         }
+        
         .window-resize-edge.left {
             left: 0;
             top: 0;
@@ -257,6 +398,7 @@
             width: var(--resize-edge-size);
             cursor: ew-resize;
         }
+        
         .window-resize-edge.right {
             right: 0;
             top: 0;
@@ -264,6 +406,7 @@
             width: var(--resize-edge-size);
             cursor: ew-resize;
         }
+        
         .window-resize-edge.top {
             left: 0;
             top: 0;
@@ -271,6 +414,7 @@
             height: var(--resize-edge-size);
             cursor: ns-resize;
         }
+        
         .window-resize-edge.bottom {
             left: 0;
             bottom: 0;
@@ -278,6 +422,7 @@
             height: var(--resize-edge-size);
             cursor: ns-resize;
         }
+        
         .window-resize-edge.corner-tl {
             left: 0;
             top: 0;
@@ -285,6 +430,7 @@
             height: var(--resize-edge-size);
             cursor: nesw-resize;
         }
+        
         .window-resize-edge.corner-tr {
             right: 0;
             top: 0;
@@ -292,6 +438,7 @@
             height: var(--resize-edge-size);
             cursor: nwse-resize;
         }
+        
         .window-resize-edge.corner-bl {
             left: 0;
             bottom: 0;
@@ -299,6 +446,7 @@
             height: var(--resize-edge-size);
             cursor: nwse-resize;
         }
+        
         .window-resize-edge.corner-br {
             right: 0;
             bottom: 0;
@@ -306,11 +454,12 @@
             height: var(--resize-edge-size);
             cursor: nesw-resize;
         }
+        
         .social-detail.active .social-panel, .resource-detail.active .resource-panel, .contact-detail.active .contact-panel, .fun-detail.active .fun-panel, .setting-detail.active .setting-panel, .blank-popup-detail.active .blank-popup-panel {
             transform: translateY(0);
             opacity: 1;
         }
-        /* 标题栏样式 */
+        
         .panel-header {
             padding: 8px 16px;
             background-color: #f8f9fa;
@@ -324,13 +473,16 @@
             position: relative;
             z-index: 20;
         }
+        
         .panel-header:active {
             cursor: grabbing;
         }
+        
         .panel-title {
             font-size: 14px;
             font-weight: 500;
         }
+        
         .close-btn {
             width: 20px;
             height: 20px;
@@ -338,6 +490,7 @@
             position: relative;
             z-index: 2002;
         }
+        
         .close-btn::before,
         .close-btn::after {
             content: '';
@@ -349,37 +502,41 @@
             background-color: #000;
             transform: translate(-50%, -50%) rotate(45deg);
         }
+        
         .close-btn::after {
             transform: translate(-50%, -50%) rotate(-45deg);
         }
-        /* 内容容器样式 */
+        
         .panel-content-wrapper {
             position: relative;
             width: 100%;
             height: calc(100% - 40px);
             overflow: auto;
         }
+        
         .panel-content-wrapper::-webkit-scrollbar {
             width: 0;
             height: 0;
         }
+        
         .panel-content-wrapper::-webkit-scrollbar-track {
             background: transparent;
         }
+        
         .panel-content-wrapper::-webkit-scrollbar-thumb {
             background: transparent;
         }
-        /* 内容区域样式 */
+        
         .panel-content {
             padding: 16px;
-            background-color: #e3f2fd;
+            background-color: var(--theme-light);
             min-height: 100%;
             box-sizing: border-box;
         }
-        /* 空白弹窗内容样式 */
+        
         .blank-popup-content {
             padding: 20px 16px;
-            background-color: #e3f2fd;
+            background-color: var(--theme-light);
             min-height: 100%;
             display: flex;
             flex-direction: column;
@@ -389,12 +546,14 @@
             box-sizing: border-box;
             position: relative;
         }
+        
         .popup-text {
             font-size: 16px;
             color: #212121;
             text-align: center;
             margin: 0;
         }
+        
         .popup-btn-group {
             display: flex;
             gap: 12px;
@@ -402,6 +561,7 @@
             bottom: 20px;
             right: 16px;
         }
+        
         .popup-btn {
             padding: 6px 16px;
             border: none;
@@ -410,31 +570,40 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
+        
         .popup-btn-cancel {
             background-color: #f5f5f5;
             color: #212121;
             border: 1px solid #e0e0e0;
         }
+        
         .popup-btn-cancel:hover {
             background-color: #e0e0e0;
         }
+        
         .popup-btn-confirm {
-            background-color: #0277bd;
+            background-color: var(--theme-color);
             color: white;
         }
+        
         .popup-btn-confirm:hover {
             background-color: #01579b;
         }
-        /* 设置面板样式 */
+        
+        body.pink-theme .popup-btn-confirm:hover {
+            background-color: #e65c9a;
+        }
+        
         .setting-content {
             padding: 20px 16px;
-            background-color: #e3f2fd;
+            background-color: var(--theme-light);
             display: flex;
             flex-direction: column;
             gap: 16px;
             min-height: 100%;
             box-sizing: border-box;
         }
+        
         .setting-item {
             display: flex;
             justify-content: space-between;
@@ -443,19 +612,45 @@
             border-bottom: 1px solid #eee;
             cursor: pointer;
         }
+        
         .setting-item:last-child {
             border-bottom: none;
         }
+        
         .setting-label {
             font-size: 16px;
             color: #212121;
         }
+        
         .dark-mode-control {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        /* 列表项样式 */
+        
+        .theme-switch-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .theme-switch-btn {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            background-color: #f5f5f5;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .theme-switch-btn.active {
+            background-color: var(--theme-color);
+            color: white;
+            border-color: var(--theme-color);
+        }
+        
         .social-item, .resource-item, .fun-item {
             display: flex;
             align-items: center;
@@ -463,32 +658,38 @@
             border-bottom: 1px solid #eee;
             cursor: pointer;
         }
+        
         .social-item:last-child, .resource-item:last-child, .fun-item:last-child {
             border-bottom: none;
         }
+        
         .social-avatar, .resource-icon, .fun-icon {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             margin-right: 12px;
             object-fit: cover;
-            background-color: var(--img-placeholder-bg); /* 图片占位 */
+            background-color: var(--img-placeholder-bg);
         }
+        
         .social-name, .resource-name, .fun-name {
             font-size: 16px;
-            color: #0277bd;
+            color: var(--theme-color);
             flex-grow: 1;
         }
+        
         .social-id {
             font-size: 14px;
             color: #212121;
             margin-top: 4px;
         }
+        
         .arrow-right {
             width: 24px;
             height: 24px;
             position: relative;
         }
+        
         .arrow-right::before {
             content: '';
             position: absolute;
@@ -496,72 +697,86 @@
             left: 50%;
             width: 12px;
             height: 12px;
-            border-top: 2px solid #0277bd;
-            border-right: 2px solid #0277bd;
+            border-top: 2px solid var(--theme-color);
+            border-right: 2px solid var(--theme-color);
             transform: translate(-30%, -50%) rotate(45deg);
         }
-        /* 点击动画 */
+        
         .click-circle {
             position: fixed;
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            border: 2px solid pink;
+            border: 2px solid var(--theme-opposite);
             transform: scale(0);
             pointer-events: none;
             z-index: 10000;
         }
+        
         .click-circle.animate {
             animation: clickCircle 1s ease-out forwards;
         }
+        
         @keyframes clickCircle {
             0% { transform: scale(0); opacity: 1; }
             100% { transform: scale(1.5); opacity: 0; }
         }
-        /* 深色模式 */
+        
         body.dark-mode {
             background-color: rgba(17, 24, 39, 0.95);
             color: #f3f4f6;
         }
+        
         body.dark-mode .container {
             background-color: rgba(31, 41, 55, 0.9);
         }
+        
         body.dark-mode .header {
             background-color: #1f2937;
         }
+        
         body.dark-mode .header-text {
             color: #f3f4f6;
         }
+        
         body.dark-mode .header-btn img {
             filter: invert(1) grayscale(100%) brightness(1);
         }
+        
         body.dark-mode .button-container {
             background-color: #374151;
         }
+        
         body.dark-mode .btn-white {
             background-color: #4b5563;
             color: #f3f4f6;
             border-color: #6b7280;
         }
+        
         body.dark-mode .btn-white:hover {
             background-color: #6b7280;
         }
+        
         body.dark-mode .panel-content,
         body.dark-mode .blank-popup-content,
         body.dark-mode .setting-content {
             background-color: #374151;
         }
+        
         body.dark-mode .panel-header {
             background-color: #1f2937;
             border-bottom-color: #374151;
         }
+        
         body.dark-mode .panel-title {
             color: #f3f4f6;
         }
+        
         body.dark-mode .close-btn::before,
         body.dark-mode .close-btn::after {
             background-color: #f3f4f6;
         }
+        
         body.dark-mode .social-name,
         body.dark-mode .resource-name,
         body.dark-mode .fun-name,
@@ -569,34 +784,40 @@
         body.dark-mode .popup-text {
             color: #f3f4f6;
         }
+        
         body.dark-mode .social-id,
         body.dark-mode .profile-english-name {
             color: #d1d5db;
         }
+        
         body.dark-mode .arrow-right::before {
             border-top-color: #d1d5db;
             border-right-color: #d1d5db;
         }
+        
         body.dark-mode .popup-btn-cancel {
             background-color: #4b5563;
             color: #f3f4f6;
             border-color: #6b7280;
         }
+        
         body.dark-mode .popup-btn-cancel:hover {
             background-color: #6b7280;
         }
-        /* 开关样式 */
+        
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 48px;
             height: 24px;
         }
+        
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
+        
         .toggle-slider {
             position: absolute;
             cursor: pointer;
@@ -608,6 +829,7 @@
             transition: .3s;
             border-radius: 24px;
         }
+        
         .toggle-slider:before {
             position: absolute;
             content: "";
@@ -619,27 +841,29 @@
             transition: .3s;
             border-radius: 50%;
         }
+        
         input:checked + .toggle-slider {
-            background-color: #0277bd;
+            background-color: var(--theme-color);
         }
+        
         input:checked + .toggle-slider:before {
             transform: translateX(24px);
         }
-        /* 拖动时样式 */
+        
         .panel-dragging {
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
-        /* 缩放时样式 */
+        
         .panel-resizing {
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
-        /* 左上角欢迎通知样式 */
+        
         #welcomeNotification {
             position: fixed;
             top: 20px;
             left: -300px;
             padding: 12px 24px;
-            background-color: #0277bd;
+            background-color: var(--theme-color);
             color: white;
             font-size: 16px;
             border-radius: 8px;
@@ -647,20 +871,33 @@
             z-index: 9999;
             transition: left 0.5s ease-in-out;
         }
+        
         #welcomeNotification.show {
             left: 20px;
         }
     </style>
 </head>
 <body>
-    <!-- 欢迎通知 -->
+    <!-- 加载界面 -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="image-container">
+            <img src="ice01.png" alt="跳动图片" class="jumping-image" id="jumpingImage">
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <div class="percentage" id="percentage">0%</div>
+        </div>
+    </div>
+
+    <!-- 主网页内容 -->
     <div id="welcomeNotification">欢迎</div>
     
-    <!-- 音频播放 -->
     <audio id="backgroundMusic" src="Music.mp3" loop>
         您的浏览器不支持音频播放，请升级浏览器。
     </audio>
-    <div class="container">
+    <div class="container" id="mainContainer">
         <div class="header">
             <div class="header-left">
                 <img src="icon.png" alt="网站图标" class="header-icon">
@@ -687,6 +924,7 @@
             </div>
         </div>
     </div>
+
     <!-- 社交平台弹窗 -->
     <div class="social-detail" id="socialDetail">
         <div class="social-panel">
@@ -717,6 +955,7 @@
             </div>
         </div>
     </div>
+
     <!-- 分享资源弹窗 -->
     <div class="resource-detail" id="resourceDetail">
         <div class="resource-panel">
@@ -754,6 +993,7 @@
             </div>
         </div>
     </div>
+
     <!-- 好玩的弹窗 -->
     <div class="fun-detail" id="funDetail">
         <div class="fun-panel">
@@ -781,6 +1021,7 @@
             </div>
         </div>
     </div>
+
     <!-- 联系方式弹窗 -->
     <div class="contact-detail" id="contactDetail">
         <div class="contact-panel">
@@ -804,6 +1045,7 @@
             </div>
         </div>
     </div>
+
     <!-- 设置弹窗 -->
     <div class="setting-detail" id="settingDetail">
         <div class="setting-panel">
@@ -833,6 +1075,17 @@
                         </div>
                     </div>
                     <div class="setting-item">
+                        <span class="setting-label">主题颜色</span>
+                        <div class="theme-switch-group">
+                            <button class="theme-switch-btn active" id="blueThemeBtn" onclick="switchTheme('blue')">
+                                <span class="theme-btn-icon blue-theme-icon"></span>蓝色主题
+                            </button>
+                            <button class="theme-switch-btn" id="pinkThemeBtn" onclick="switchTheme('pink')">
+                                <span class="theme-btn-icon pink-theme-icon"></span>粉色主题
+                            </button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
                         <span class="setting-label">清除音乐记录</span>
                         <button class="btn btn-white" style="width: auto; padding: 4px 8px; font-size: 14px;" onclick="clearMusicStorage()">清除</button>
                     </div>
@@ -844,599 +1097,598 @@
             </div>
         </div>
     </div>
+
     <script>
-        // 基础变量
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const DARK_MODE_KEY = 'darkModeSetting';
-        let selectedBtn = null;
-        let isPanelOpen = false;
-        let currentZIndex = 2001;
-        
-        // 音乐相关
-        const musicElement = document.getElementById('backgroundMusic');
-        const musicBtnImg = document.getElementById('musicBtn').querySelector('img');
-        
-        // 拖动相关变量
-        let isDragging = false;
-        let dragTarget = null;
-        let startX = 0;
-        let startY = 0;
-        let targetLeft = 0;
-        let targetTop = 0;
-        
-        // 缩放相关变量
-        let isResizing = false;
-        let resizeTarget = null;
-        let resizeType = '';
-        let startWidth = 0;
-        let startHeight = 0;
-        let startLeft = 0;
-        let startTop = 0;
-        // 从CSS变量获取最小宽高（统一控制）
-        const minWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-min-width'));
-        const minHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-min-height'));
-        
-        // 初始化
-        window.onload = function() {
+        // 加载动画逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const jumpingImage = document.getElementById('jumpingImage');
+            const progressBar = document.getElementById('progress');
+            const percentage = document.getElementById('percentage');
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            let currentImage = 1;
+            let jumpCount = 0;
+            let progress = 0;
+            const loadInterval = setInterval(updateProgress, 300); // 进度更新间隔
+            
+            // 图片切换函数
+            function switchImage() {
+                currentImage = (currentImage % 5) + 1;
+                jumpingImage.src = `ice0${currentImage}.png`;
+                jumpCount++;
+            }
+            
+            // 进度更新函数
+            function updateProgress() {
+                progress = Math.min(progress + 5, 100);
+                progressBar.style.width = `${progress}%`;
+                percentage.textContent = `${progress}%`;
+                
+                // 进度满了之后隐藏加载界面，显示主内容
+                if (progress === 100) {
+                    clearInterval(loadInterval);
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = 0;
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                            mainContainer.style.display = 'flex'; // 显示主内容
+                            initMainPage(); // 初始化主页面功能
+                        }, 500);
+                    }, 500);
+                }
+            }
+            
+            // 监听动画迭代事件
+            jumpingImage.addEventListener('animationiteration', switchImage);
+            
+            // 初始设置
+            switchImage();
+        });
+
+        // 主页面初始化函数
+        function initMainPage() {
+            // 基础变量
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const DARK_MODE_KEY = 'darkModeSetting';
+            const THEME_KEY = 'themeSetting';
+            let selectedBtn = null;
+            let isPanelOpen = false;
+            let currentZIndex = 2001;
+            
+            // 音乐相关
+            const musicElement = document.getElementById('backgroundMusic');
+            const musicBtnImg = document.getElementById('musicBtn').querySelector('img');
+            
+            // 拖动相关变量
+            let isDragging = false;
+            let dragTarget = null;
+            let startX = 0;
+            let startY = 0;
+            let targetLeft = 0;
+            let targetTop = 0;
+            
+            // 缩放相关变量
+            let isResizing = false;
+            let resizeTarget = null;
+            let resizeType = '';
+            let startWidth = 0;
+            let startHeight = 0;
+            let startLeft = 0;
+            let startTop = 0;
+            const minWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-min-width'));
+            const minHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-min-height'));
+            
+            // 初始化主页面功能
             setMusicPaused();
             initDarkMode();
+            initTheme();
             bindButtonEvents();
             bindGlobalEvents();
             showWelcomeNotification();
+            
             // 图片加载完成后移除占位背景
             document.querySelectorAll('img').forEach(img => {
                 img.onload = function() {
                     this.style.backgroundColor = 'transparent';
                 };
             });
-        };
-        
-        // 欢迎通知显示逻辑
-        function showWelcomeNotification() {
-            const notification = document.getElementById('welcomeNotification');
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            setTimeout(() => {
-                notification.classList.remove('show');
+            
+            // 欢迎通知显示逻辑
+            function showWelcomeNotification() {
+                const notification = document.getElementById('welcomeNotification');
                 setTimeout(() => {
-                    notification.remove();
-                }, 500);
-            }, 5000);
-        }
-        
-        // 绑定按钮点击事件
-        function bindButtonEvents() {
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.addEventListener('click', btnClickHandle);
-            });
-        }
-        
-        // 绑定全局事件
-        function bindGlobalEvents() {
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-            document.addEventListener('touchmove', dragTouch, { passive: false });
-            document.addEventListener('touchend', stopDrag);
-            document.addEventListener('touchcancel', stopDrag);
-            document.addEventListener('mousemove', resize);
-            document.addEventListener('mouseup', stopResize);
-            document.addEventListener('touchmove', resizeTouch, { passive: false });
-            document.addEventListener('touchend', stopResize);
-            document.addEventListener('touchcancel', stopResize);
-            document.addEventListener('click', addClickCircle);
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.blank-popup-panel') && !event.target.closest('.header-btn')) {
-                    cancelAllSelected();
-                }
-            });
-        }
-        
-        // 深色模式初始化
-        function initDarkMode() {
-            const savedSetting = localStorage.getItem(DARK_MODE_KEY);
-            const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.remove('dark-mode');
-            if (savedSetting === 'dark') {
-                enableDarkMode();
-                darkModeToggle.checked = true;
-            } else if (savedSetting === 'light') {
-                disableDarkMode();
-                darkModeToggle.checked = false;
-            } else {
-                if (systemIsDark) {
+                    notification.classList.add('show');
+                }, 100);
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 500);
+                }, 5000);
+            }
+            
+            // 绑定按钮点击事件
+            function bindButtonEvents() {
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.addEventListener('click', btnClickHandle);
+                });
+            }
+            
+            // 绑定全局事件
+            function bindGlobalEvents() {
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchmove', dragTouch, { passive: false });
+                document.addEventListener('touchend', stopDrag);
+                document.addEventListener('touchcancel', stopDrag);
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+                document.addEventListener('touchmove', resizeTouch, { passive: false });
+                document.addEventListener('touchend', stopResize);
+                document.addEventListener('touchcancel', stopResize);
+                document.addEventListener('click', addClickCircle);
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.btn') && !event.target.closest('.social-panel') && !event.target.closest('.resource-panel') && !event.target.closest('.contact-panel') && !event.target.closest('.fun-panel') && !event.target.closest('.setting-panel') && !event.target.closest('.blank-popup-panel') && !event.target.closest('.header-btn')) {
+                        cancelAllSelected();
+                    }
+                });
+            }
+            
+            // 深色模式初始化
+            function initDarkMode() {
+                const savedSetting = localStorage.getItem(DARK_MODE_KEY);
+                const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.body.classList.remove('dark-mode');
+                if (savedSetting === 'dark') {
                     enableDarkMode();
                     darkModeToggle.checked = true;
-                } else {
+                } else if (savedSetting === 'light') {
                     disableDarkMode();
                     darkModeToggle.checked = false;
+                } else {
+                    if (systemIsDark) {
+                        enableDarkMode();
+                        darkModeToggle.checked = true;
+                    } else {
+                        disableDarkMode();
+                        darkModeToggle.checked = false;
+                    }
                 }
             }
-        }
-        
-        function enableDarkMode() {
-            document.body.classList.add('dark-mode');
-        }
-        
-        function disableDarkMode() {
-            document.body.classList.remove('dark-mode');
-            document.body.offsetHeight;
-        }
-        
-        function toggleDarkMode() {
-            const isDark = document.body.classList.contains('dark-mode');
-            if (isDark) {
-                disableDarkMode();
-                localStorage.setItem(DARK_MODE_KEY, 'light');
-                darkModeToggle.checked = false;
-            } else {
-                enableDarkMode();
-                localStorage.setItem(DARK_MODE_KEY, 'dark');
-                darkModeToggle.checked = true;
+            
+            function enableDarkMode() {
+                document.body.classList.add('dark-mode');
             }
-        }
-        
-        function resetDarkModeToSystem() {
-            localStorage.removeItem(DARK_MODE_KEY);
-            initDarkMode();
-            alert('已恢复为系统默认模式');
-        }
-        
-        // 音乐控制
-        function toggleMusic() {
-            if (musicElement.paused) {
-                musicElement.play().then(() => {
-                    musicBtnImg.src = 'sy2.png';
-                    localStorage.setItem('musicState', 'playing');
-                }).catch(err => {
-                    alert('浏览器限制自动播放，请手动授权或刷新页面后重试');
-                });
-            } else {
+            
+            function disableDarkMode() {
+                document.body.classList.remove('dark-mode');
+                document.body.offsetHeight;
+            }
+            
+            function toggleDarkMode() {
+                const isDark = document.body.classList.contains('dark-mode');
+                if (isDark) {
+                    disableDarkMode();
+                    localStorage.setItem(DARK_MODE_KEY, 'light');
+                    darkModeToggle.checked = false;
+                } else {
+                    enableDarkMode();
+                    localStorage.setItem(DARK_MODE_KEY, 'dark');
+                    darkModeToggle.checked = true;
+                }
+            }
+            
+            function resetDarkModeToSystem() {
+                localStorage.removeItem(DARK_MODE_KEY);
+                initDarkMode();
+                alert('已恢复为系统默认模式');
+            }
+            
+            // 主题切换功能
+            function initTheme() {
+                const savedTheme = localStorage.getItem(THEME_KEY) || 'blue';
+                switchTheme(savedTheme);
+            }
+            
+            function switchTheme(theme) {
+                document.body.classList.remove('pink-theme');
+                if (theme === 'pink') {
+                    document.body.classList.add('pink-theme');
+                }
+                document.getElementById('blueThemeBtn').classList.toggle('active', theme === 'blue');
+                document.getElementById('pinkThemeBtn').classList.toggle('active', theme === 'pink');
+                localStorage.setItem(THEME_KEY, theme);
+            }
+            
+            // 音乐控制
+            function toggleMusic() {
+                if (musicElement.paused) {
+                    musicElement.play().then(() => {
+                        musicBtnImg.src = 'sy2.png';
+                        localStorage.setItem('musicState', 'playing');
+                    }).catch(err => {
+                        alert('浏览器限制自动播放，请手动授权或刷新页面后重试');
+                    });
+                } else {
+                    musicElement.pause();
+                    musicBtnImg.src = 'sy1.png';
+                    localStorage.setItem('musicState', 'paused');
+                }
+            }
+            
+            function setMusicPaused() {
                 musicElement.pause();
                 musicBtnImg.src = 'sy1.png';
                 localStorage.setItem('musicState', 'paused');
             }
-        }
-        
-        function setMusicPaused() {
-            musicElement.pause();
-            musicBtnImg.src = 'sy1.png';
-            localStorage.setItem('musicState', 'paused');
-        }
-        
-        function clearMusicStorage() {
-            localStorage.removeItem('musicState');
-            setMusicPaused();
-            alert('音乐记录已清除');
-        }
-        
-        // 按钮选择框逻辑
-        function btnClickHandle(event) {
-            const currentBtn = event.currentTarget;
-            const btnType = currentBtn.dataset.type;
-            if (selectedBtn === currentBtn) {
-                openPanel(btnType);
-                isPanelOpen = true;
-            } else {
+            
+            function clearMusicStorage() {
+                localStorage.removeItem('musicState');
+                setMusicPaused();
+                alert('音乐记录已清除');
+            }
+            
+            // 按钮选择框逻辑
+            function btnClickHandle(event) {
+                const currentBtn = event.currentTarget;
+                const btnType = currentBtn.dataset.type;
+                if (selectedBtn === currentBtn) {
+                    openPanel(btnType);
+                    isPanelOpen = true;
+                } else {
+                    cancelAllSelected();
+                    currentBtn.classList.add('selected');
+                    selectedBtn = currentBtn;
+                    isPanelOpen = false;
+                }
+            }
+            
+            // 打开面板
+            function openPanel(type) {
+                let panelId = '';
+                switch(type) {
+                    case 'social': panelId = 'socialDetail'; break;
+                    case 'resource': panelId = 'resourceDetail'; break;
+                    case 'fun': panelId = 'funDetail'; break;
+                    case 'contact': panelId = 'contactDetail'; break;
+                    case 'setting': panelId = 'settingDetail'; break;
+                }
+                const originalPanel = document.getElementById(panelId);
+                const popupDefaultWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-width'));
+                const popupDefaultHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-height'));
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                const centerLeft = (screenWidth - popupDefaultWidth) / 2;
+                const centerTop = (screenHeight - popupDefaultHeight) / 2;
+                
+                const newPanel = originalPanel.cloneNode(true);
+                const newPanelId = panelId + '_' + Date.now();
+                newPanel.id = newPanelId;
+                const newPanelElement = newPanel.querySelector('[class$="-panel"]');
+                
+                newPanelElement.style.left = `${centerLeft}px`;
+                newPanelElement.style.top = `${centerTop}px`;
+                newPanelElement.style.width = `${popupDefaultWidth}px`;
+                newPanelElement.style.height = `${popupDefaultHeight}px`;
+                newPanelElement.style.zIndex = currentZIndex++;
+                
+                const resizeEdges = newPanelElement.querySelectorAll('.window-resize-edge');
+                resizeEdges.forEach(edge => {
+                    let edgeType = '';
+                    if (edge.classList.contains('left')) edgeType = 'left';
+                    else if (edge.classList.contains('right')) edgeType = 'right';
+                    else if (edge.classList.contains('top')) edgeType = 'top';
+                    else if (edge.classList.contains('bottom')) edgeType = 'bottom';
+                    else if (edge.classList.contains('corner-tl')) edgeType = 'corner-tl';
+                    else if (edge.classList.contains('corner-tr')) edgeType = 'corner-tr';
+                    else if (edge.classList.contains('corner-bl')) edgeType = 'corner-bl';
+                    else if (edge.classList.contains('corner-br')) edgeType = 'corner-br';
+                    
+                    edge.onmousedown = (e) => startResize(e, newPanelElement, edgeType);
+                    edge.ontouchstart = (e) => startResizeTouch(e, newPanelElement, edgeType);
+                });
+                
+                const newHeader = newPanelElement.querySelector('.panel-header');
+                newHeader.onmousedown = (e) => startDrag(e, newPanelElement);
+                newHeader.ontouchstart = (e) => startDragTouch(e, newPanelElement);
+                
+                const newCloseBtn = newPanelElement.querySelector('.close-btn');
+                newCloseBtn.onclick = () => hidePanel(newPanel);
+                
+                document.body.appendChild(newPanel);
+                setTimeout(() => {
+                    newPanel.classList.add('active');
+                }, 10);
+            }
+            
+            // 隐藏单个面板
+            function hidePanel(panelElement) {
+                panelElement.classList.remove('active');
+                setTimeout(() => {
+                    panelElement.remove();
+                }, 300);
+            }
+            
+            // 关闭所有窗口
+            function closeAllWindows() {
+                document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
+                    if (panel.id.includes('_')) {
+                        panel.classList.remove('active');
+                        setTimeout(() => panel.remove(), 300);
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+                
+                document.querySelectorAll('.blank-popup-detail').forEach(popup => {
+                    popup.classList.remove('active');
+                    setTimeout(() => popup.remove(), 300);
+                });
+                
                 cancelAllSelected();
-                currentBtn.classList.add('selected');
-                selectedBtn = currentBtn;
+                selectedBtn = null;
                 isPanelOpen = false;
             }
-        }
-        
-        // 打开面板
-        function openPanel(type) {
-            let panelId = '';
-            switch(type) {
-                case 'social': panelId = 'socialDetail'; break;
-                case 'resource': panelId = 'resourceDetail'; break;
-                case 'fun': panelId = 'funDetail'; break;
-                case 'contact': panelId = 'contactDetail'; break;
-                case 'setting': panelId = 'settingDetail'; break;
+            
+            // 取消按钮选中状态
+            function cancelAllSelected() {
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                selectedBtn = null;
             }
-            const originalPanel = document.getElementById(panelId);
-            // 从CSS变量获取默认宽高
-            const popupDefaultWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-width'));
-            const popupDefaultHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-height'));
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            const centerLeft = (screenWidth - popupDefaultWidth) / 2;
-            const centerTop = (screenHeight - popupDefaultHeight) / 2;
             
-            const newPanel = originalPanel.cloneNode(true);
-            const newPanelId = panelId + '_' + Date.now();
-            newPanel.id = newPanelId;
-            const newPanelElement = newPanel.querySelector('[class$="-panel"]');
+            // 打开快手主页
+            function openKuaishouProfile() {
+                window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
+            }
             
-            newPanelElement.style.left = `${centerLeft}px`;
-            newPanelElement.style.top = `${centerTop}px`;
-            newPanelElement.style.width = `${popupDefaultWidth}px`;
-            newPanelElement.style.height = `${popupDefaultHeight}px`;
-            newPanelElement.style.zIndex = currentZIndex++;
+            // 打开资源链接
+            function openResourceLink(url) {
+                window.open(url, '_blank', 'noopener noreferrer');
+            }
             
-            const resizeEdges = newPanelElement.querySelectorAll('.window-resize-edge');
-            resizeEdges.forEach(edge => {
-                let edgeType = '';
-                if (edge.classList.contains('left')) edgeType = 'left';
-                else if (edge.classList.contains('right')) edgeType = 'right';
-                else if (edge.classList.contains('top')) edgeType = 'top';
-                else if (edge.classList.contains('bottom')) edgeType = 'bottom';
-                else if (edge.classList.contains('corner-tl')) edgeType = 'corner-tl';
-                else if (edge.classList.contains('corner-tr')) edgeType = 'corner-tr';
-                else if (edge.classList.contains('corner-bl')) edgeType = 'corner-bl';
-                else if (edge.classList.contains('corner-br')) edgeType = 'corner-br';
+            // 点击动画
+            function addClickCircle(event) {
+                const circle = document.createElement('div');
+                circle.classList.add('click-circle');
+                circle.style.left = (event.clientX - 30) + 'px';
+                circle.style.top = (event.clientY - 30) + 'px';
+                document.body.appendChild(circle);
+                circle.classList.add('animate');
+                setTimeout(() => circle.remove(), 1000);
+            }
+            
+            // 无限弹窗
+            async function openInfinitePopups() {
+                const popupDefaultWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-width'));
+                const popupDefaultHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-height'));
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                const centerLeft = (screenWidth - popupDefaultWidth) / 2;
+                const centerTop = (screenHeight - popupDefaultHeight) / 2;
                 
-                edge.onmousedown = (e) => startResize(e, newPanelElement, edgeType);
-                edge.ontouchstart = (e) => startResizeTouch(e, newPanelElement, edgeType);
-            });
-            
-            const newHeader = newPanelElement.querySelector('.panel-header');
-            newHeader.onmousedown = (e) => startDrag(e, newPanelElement);
-            newHeader.ontouchstart = (e) => startDragTouch(e, newPanelElement);
-            
-            const newCloseBtn = newPanelElement.querySelector('.close-btn');
-            newCloseBtn.onclick = () => hidePanel(newPanel);
-            
-            document.body.appendChild(newPanel);
-            setTimeout(() => {
-                newPanel.classList.add('active');
-            }, 10);
-        }
-        
-        // 隐藏单个面板
-        function hidePanel(panelElement) {
-            panelElement.classList.remove('active');
-            setTimeout(() => {
-                panelElement.remove();
-            }, 300);
-        }
-        
-        // 关闭所有窗口
-        function closeAllWindows() {
-            document.querySelectorAll('.social-detail, .resource-detail, .contact-detail, .fun-detail, .setting-detail').forEach(panel => {
-                if (panel.id.includes('_')) {
-                    panel.classList.remove('active');
-                    setTimeout(() => panel.remove(), 300);
-                } else {
-                    panel.classList.remove('active');
-                }
-            });
-            
-            document.querySelectorAll('.blank-popup-detail').forEach(popup => {
-                popup.classList.remove('active');
-                setTimeout(() => popup.remove(), 300);
-            });
-            
-            cancelAllSelected();
-            selectedBtn = null;
-            isPanelOpen = false;
-        }
-        
-        // 取消按钮选中状态
-        function cancelAllSelected() {
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            selectedBtn = null;
-        }
-        
-        // 打开快手主页
-        function openKuaishouProfile() {
-            window.open(`https://www.kuaishou.com/u/x1594482`, '_blank', 'noopener noreferrer');
-        }
-        
-        // 打开资源链接
-        function openResourceLink(url) {
-            window.open(url, '_blank', 'noopener noreferrer');
-        }
-        
-        // 点击动画
-        function addClickCircle(event) {
-            const circle = document.createElement('div');
-            circle.classList.add('click-circle');
-            circle.style.left = (event.clientX - 30) + 'px';
-            circle.style.top = (event.clientY - 30) + 'px';
-            document.body.appendChild(circle);
-            circle.classList.add('animate');
-            setTimeout(() => circle.remove(), 1000);
-        }
-        
-        // 无限弹窗
-        async function openInfinitePopups() {
-            // 从CSS变量获取默认宽高
-            const popupDefaultWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-width'));
-            const popupDefaultHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--popup-default-height'));
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            const centerLeft = (screenWidth - popupDefaultWidth) / 2;
-            const centerTop = (screenHeight - popupDefaultHeight) / 2;
-            
-            for (let i = 0; i < 25; i++) {
-                const popupText = await getRandomTextFromFile();
-                
-                setTimeout(() => {
-                    const popup = document.createElement('div');
-                    popup.className = 'blank-popup-detail';
-                    popup.style.position = 'fixed';
-                    popup.style.left = '0';
-                    popup.style.top = '0';
+                for (let i = 0; i < 25; i++) {
+                    const popupText = await getRandomTextFromFile();
                     
-                    const randomOffsetX = (Math.random() - 0.5) * 50;
-                    const randomOffsetY = (Math.random() - 0.5) * 50;
-                    const finalLeft = centerLeft + randomOffsetX;
-                    const finalTop = centerTop + randomOffsetY;
-                    
-                    popup.innerHTML = `
-                        <div class="blank-popup-panel" style="left: ${finalLeft}px; top: ${finalTop}px; width: ${popupDefaultWidth}px; height: ${popupDefaultHeight}px; z-index: ${currentZIndex++};">
-                            <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
-                            <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
-                            <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
-                            <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
-                            <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
-                            <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
-                            <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
-                            <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
-                            
-                            <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
-                                <div class="panel-title">提示</div>
-                                <div class="close-btn" onclick="hidePanel(this.closest('.blank-popup-detail'))"></div>
-                            </div>
-                            <div class="panel-content-wrapper">
-                                <div class="blank-popup-content">
-                                    <p class="popup-text">${popupText}</p>
-                                    <div class="popup-btn-group">
-                                        <button class="popup-btn popup-btn-cancel" onclick="hidePanel(this.closest('.blank-popup-detail'))">取消</button>
-                                        <button class="popup-btn popup-btn-confirm" onclick="hidePanel(this.closest('.blank-popup-detail'))">确定</button>
+                    setTimeout(() => {
+                        const popup = document.createElement('div');
+                        popup.className = 'blank-popup-detail';
+                        popup.style.position = 'fixed';
+                        popup.style.left = '0';
+                        popup.style.top = '0';
+                        
+                        const randomOffsetX = (Math.random() - 0.5) * 50;
+                        const randomOffsetY = (Math.random() - 0.5) * 50;
+                        const finalLeft = centerLeft + randomOffsetX;
+                        const finalTop = centerTop + randomOffsetY;
+                        
+                        popup.innerHTML = `
+                            <div class="blank-popup-panel" style="left: ${finalLeft}px; top: ${finalTop}px; width: ${popupDefaultWidth}px; height: ${popupDefaultHeight}px; z-index: ${currentZIndex++};">
+                                <div class="window-resize-edge left" onmousedown="startResize(event, this.parentElement, 'left')" ontouchstart="startResizeTouch(event, this.parentElement, 'left')"></div>
+                                <div class="window-resize-edge right" onmousedown="startResize(event, this.parentElement, 'right')" ontouchstart="startResizeTouch(event, this.parentElement, 'right')"></div>
+                                <div class="window-resize-edge top" onmousedown="startResize(event, this.parentElement, 'top')" ontouchstart="startResizeTouch(event, this.parentElement, 'top')"></div>
+                                <div class="window-resize-edge bottom" onmousedown="startResize(event, this.parentElement, 'bottom')" ontouchstart="startResizeTouch(event, this.parentElement, 'bottom')"></div>
+                                <div class="window-resize-edge corner-tl" onmousedown="startResize(event, this.parentElement, 'corner-tl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tl')"></div>
+                                <div class="window-resize-edge corner-tr" onmousedown="startResize(event, this.parentElement, 'corner-tr')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-tr')"></div>
+                                <div class="window-resize-edge corner-bl" onmousedown="startResize(event, this.parentElement, 'corner-bl')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-bl')"></div>
+                                <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
+                                
+                                <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
+                                    <div class="panel-title">提示</div>
+                                    <div class="close-btn" onclick="hidePanel(this.closest('.blank-popup-detail'))"></div>
+                                </div>
+                                <div class="panel-content-wrapper">
+                                    <div class="blank-popup-content">
+                                        <p class="popup-text">${popupText}</p>
+                                        <div class="popup-btn-group">
+                                            <button class="popup-btn popup-btn-cancel" onclick="hidePanel(this.closest('.blank-popup-detail'))">取消</button>
+                                            <button class="popup-btn popup-btn-confirm" onclick="hidePanel(this.closest('.blank-popup-detail'))">确定</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                    document.body.appendChild(popup);
-                    setTimeout(() => {
-                        popup.classList.add('active');
-                    }, 10);
-                }, i * 200);
-            }
-        }
-        
-        // 获取弹窗文本
-        async function getRandomTextFromFile() {
-            try {
-                const response = await fetch('wenben.txt');
-                if (!response.ok) throw new Error('文件未找到');
-                const text = await response.text();
-                const lines = text.split('\n').filter(line => line.trim() !== '');
-                return lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)].trim() : '错误';
-            } catch (error) {
-                return '错误';
-            }
-        }
-        
-        // 鼠标拖动开始
-        function startDrag(event, target) {
-            if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
-            isDragging = true;
-            dragTarget = target;
-            dragTarget.classList.add('panel-dragging');
-            startX = event.clientX;
-            startY = event.clientY;
-            const rect = dragTarget.getBoundingClientRect();
-            targetLeft = rect.left;
-            targetTop = rect.top;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 触摸拖动开始
-        function startDragTouch(event, target) {
-            if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
-            const touch = event.touches[0];
-            isDragging = true;
-            dragTarget = target;
-            dragTarget.classList.add('panel-dragging');
-            startX = touch.clientX;
-            startY = touch.clientY;
-            const rect = dragTarget.getBoundingClientRect();
-            targetLeft = rect.left;
-            targetTop = rect.top;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 鼠标拖动中
-        function drag(event) {
-            if (!isDragging || !dragTarget) return;
-            const offsetX = event.clientX - startX;
-            const offsetY = event.clientY - startY;
-            const newLeft = targetLeft + offsetX;
-            const newTop = targetTop + offsetY;
-            dragTarget.style.left = `${newLeft}px`;
-            dragTarget.style.top = `${newTop}px`;
-            event.stopPropagation();
-        }
-        
-        // 触摸拖动中
-        function dragTouch(event) {
-            if (!isDragging || !dragTarget) return;
-            const touch = event.touches[0];
-            const offsetX = touch.clientX - startX;
-            const offsetY = touch.clientY - startY;
-            const newLeft = targetLeft + offsetX;
-            const newTop = targetTop + offsetY;
-            dragTarget.style.left = `${newLeft}px`;
-            dragTarget.style.top = `${newTop}px`;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 停止拖动
-        function stopDrag() {
-            if (dragTarget) {
-                dragTarget.classList.remove('panel-dragging');
-            }
-            isDragging = false;
-            dragTarget = null;
-        }
-        
-        // 鼠标缩放开始
-        function startResize(event, target, type) {
-            if (isDragging) return;
-            isResizing = true;
-            resizeTarget = target;
-            resizeType = type;
-            resizeTarget.classList.add('panel-resizing');
-            const rect = resizeTarget.getBoundingClientRect();
-            startWidth = rect.width;
-            startHeight = rect.height;
-            startLeft = rect.left;
-            startTop = rect.top;
-            startX = event.clientX;
-            startY = event.clientY;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 触摸缩放开始
-        function startResizeTouch(event, target, type) {
-            if (isDragging) return;
-            const touch = event.touches[0];
-            isResizing = true;
-            resizeTarget = target;
-            resizeType = type;
-            resizeTarget.classList.add('panel-resizing');
-            const rect = resizeTarget.getBoundingClientRect();
-            startWidth = rect.width;
-            startHeight = rect.height;
-            startLeft = rect.left;
-            startTop = rect.top;
-            startX = touch.clientX;
-            startY = touch.clientY;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 鼠标缩放中
-        function resize(event) {
-            if (!isResizing || !resizeTarget) return;
-            const offsetX = event.clientX - startX;
-            const offsetY = event.clientY - startY;
-            let newWidth = startWidth;
-            let newHeight = startHeight;
-            let newLeft = startLeft;
-            let newTop = startTop;
-            
-            switch(resizeType) {
-                case 'left':
-                    newWidth = Math.max(minWidth, startWidth - offsetX);
-                    newLeft = startLeft + offsetX;
-                    break;
-                case 'right':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
-                    break;
-                case 'top':
-                    newHeight = Math.max(minHeight, startHeight - offsetY);
-                    newTop = startTop + offsetY;
-                    break;
-                case 'bottom':
-                    newHeight = Math.max(minHeight, startHeight + offsetY);
-                    break;
-                case 'corner-tl':
-                    newWidth = Math.max(minWidth, startWidth - offsetX);
-                    newHeight = Math.max(minHeight, startHeight - offsetY);
-                    newLeft = startLeft + offsetX;
-                    newTop = startTop + offsetY;
-                    break;
-                case 'corner-tr':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
-                    newHeight = Math.max(minHeight, startHeight - offsetY);
-                    newTop = startTop + offsetY;
-                    break;
-                case 'corner-bl':
-                    newWidth = Math.max(minWidth, startWidth - offsetX);
-                    newHeight = Math.max(minHeight, startHeight + offsetY);
-                    newLeft = startLeft + offsetX;
-                    break;
-                case 'corner-br':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
-                    newHeight = Math.max(minHeight, startHeight + offsetY);
-                    break;
+                        `;
+                        document.body.appendChild(popup);
+                        setTimeout(() => {
+                            popup.classList.add('active');
+                        }, 10);
+                    }, i * 200);
+                }
             }
             
-            resizeTarget.style.width = `${newWidth}px`;
-            resizeTarget.style.height = `${newHeight}px`;
-            resizeTarget.style.left = `${newLeft}px`;
-            resizeTarget.style.top = `${newTop}px`;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 触摸缩放中
-        function resizeTouch(event) {
-            if (!isResizing || !resizeTarget) return;
-            const touch = event.touches[0];
-            const offsetX = touch.clientX - startX;
-            const offsetY = touch.clientY - startY;
-            let newWidth = startWidth;
-            let newHeight = startHeight;
-            let newLeft = startLeft;
-            let newTop = startTop;
-            
-            switch(resizeType) {
-                case 'left':
-                    newWidth = Math.max(minWidth, startWidth - offsetX);
-                    newLeft = startLeft + offsetX;
-                    break;
-                case 'right':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
-                    break;
-                case 'top':
-                    newHeight = Math.max(minHeight, startHeight - offsetY);
-                    newTop = startTop + offsetY;
-                    break;
-                case 'bottom':
-                    newHeight = Math.max(minHeight, startHeight + offsetY);
-                    break;
-                case 'corner-tl':
-                    newWidth = Math.max(minWidth, startWidth - offsetX);
-                    newHeight = Math.max(minHeight, startHeight - offsetY);
-                    newLeft = startLeft + offsetX;
-                    newTop = startTop + offsetY;
-                    break;
-                case 'corner-tr':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
-                    newHeight = Math.max(minHeight, startHeight - offsetY);
-                    newTop = startTop + offsetY;
-                    break;
-                case 'corner-bl':
-                    newWidth = Math.max(minWidth, startWidth - offsetX);
-                    newHeight = Math.max(minHeight, startHeight + offsetY);
-                    newLeft = startLeft + offsetX;
-                    break;
-                case 'corner-br':
-                    newWidth = Math.max(minWidth, startWidth + offsetX);
-                    newHeight = Math.max(minHeight, startHeight + offsetY);
-                    break;
+            // 获取弹窗文本
+            async function getRandomTextFromFile() {
+                try {
+                    const response = await fetch('wenben.txt');
+                    if (!response.ok) throw new Error('文件未找到');
+                    const text = await response.text();
+                    const lines = text.split('\n').filter(line => line.trim() !== '');
+                    return lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)].trim() : '错误';
+                } catch (error) {
+                    return '错误';
+                }
             }
             
-            resizeTarget.style.width = `${newWidth}px`;
-            resizeTarget.style.height = `${newHeight}px`;
-            resizeTarget.style.left = `${newLeft}px`;
-            resizeTarget.style.top = `${newTop}px`;
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        
-        // 停止缩放
-        function stopResize() {
-            if (resizeTarget) {
-                resizeTarget.classList.remove('panel-resizing');
+            // 鼠标拖动开始
+            function startDrag(event, target) {
+                if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
+                isDragging = true;
+                dragTarget = target;
+                dragTarget.classList.add('panel-dragging');
+                startX = event.clientX;
+                startY = event.clientY;
+                const rect = dragTarget.getBoundingClientRect();
+                targetLeft = rect.left;
+                targetTop = rect.top;
+                event.stopPropagation();
+                event.preventDefault();
             }
-            isResizing = false;
-            resizeTarget = null;
-            resizeType = '';
-        }
-    </script>
-</body>
-</html>
+            
+            // 触摸拖动开始
+            function startDragTouch(event, target) {
+                if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
+                const touch = event.touches[0];
+                isDragging = true;
+                dragTarget = target;
+                dragTarget.classList.add('panel-dragging');
+                startX = touch.clientX;
+                startY = touch.clientY;
+                const rect = dragTarget.getBoundingClientRect();
+                targetLeft = rect.left;
+                targetTop = rect.top;
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            // 鼠标拖动中
+            function drag(event) {
+                if (!isDragging || !dragTarget) return;
+                const offsetX = event.clientX - startX;
+                const offsetY = event.clientY - startY;
+                const newLeft = targetLeft + offsetX;
+                const newTop = targetTop + offsetY;
+                dragTarget.style.left = `${newLeft}px`;
+                dragTarget.style.top = `${newTop}px`;
+                event.stopPropagation();
+            }
+            
+            // 触摸拖动中
+            function dragTouch(event) {
+                if (!isDragging || !dragTarget) return;
+                const touch = event.touches[0];
+                const offsetX = touch.clientX - startX;
+                const offsetY = touch.clientY - startY;
+                const newLeft = targetLeft + offsetX;
+                const newTop = targetTop + offsetY;
+                dragTarget.style.left = `${newLeft}px`;
+                dragTarget.style.top = `${newTop}px`;
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            // 停止拖动
+            function stopDrag() {
+                if (dragTarget) {
+                    dragTarget.classList.remove('panel-dragging');
+                }
+                isDragging = false;
+                dragTarget = null;
+            }
+            
+            // 鼠标缩放开始
+            function startResize(event, target, type) {
+                if (isDragging) return;
+                isResizing = true;
+                resizeTarget = target;
+                resizeType = type;
+                resizeTarget.classList.add('panel-resizing');
+                const rect = resizeTarget.getBoundingClientRect();
+                startWidth = rect.width;
+                startHeight = rect.height;
+                startLeft = rect.left;
+                startTop = rect.top;
+                startX = event.clientX;
+                startY = event.clientY;
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            // 触摸缩放开始
+            function startResizeTouch(event, target, type) {
+                if (isDragging) return;
+                const touch = event.touches[0];
+                isResizing = true;
+                resizeTarget = target;
+                resizeType = type;
+                resizeTarget.classList.add('panel-resizing');
+                const rect = resizeTarget.getBoundingClientRect();
+                startWidth = rect.width;
+                startHeight = rect.height;
+                startLeft = rect.left;
+                startTop = rect.top;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            // 鼠标缩放中
+            function resize(event) {
+                if (!isResizing || !resizeTarget) return;
+                const offsetX = event.clientX - startX;
+                const offsetY = event.clientY - startY;
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newLeft = startLeft;
+                let newTop = startTop;
+                
+                switch(resizeType) {
+                    case 'left':
+                        newWidth = Math.max(minWidth, startWidth - offsetX);
+                        newLeft = startLeft + offsetX;
+                        break;
+                    case 'right':
+                        newWidth = Math.max(minWidth, startWidth + offsetX);
+                        break;
+                    case 'top':
+                        newHeight = Math.max(minHeight, startHeight - offsetY);
+                        newTop = startTop + offsetY;
+                        break;
+                    case 'bottom':
+                        newHeight = Math.max(minHeight, startHeight + offsetY);
+                        break;
+                    case 'corner-tl':
+                        newWidth = Math.max(minWidth, startWidth - offsetX);
+                        newHeight = Math.max(minHeight, startHeight - offsetY);
+                        newLeft = startLeft + offsetX;
+                        newTop = startTop + offsetY;
+                        break;
+                    case 'corner-tr':
+                        newWidth = Math.max(minWidth, startWidth + offsetX);
+                        newHeight = Math.max(minHeight, startHeight - offsetY);
+                        newTop = startTop + offsetY;
+                        break;
+                    case 'corner-bl':
+                        newWidth = Math.max(minWidth, startWidth - offsetX);
+                        newHeight = Math.max(minHeight, startHeight + offsetY);
+                        newLeft = startLeft + offsetX;
+                        break;
+                    case 'corner-br':
+                        newWidth = Math.max(minWidth, startWidth + offsetX);
+                        newHeight = Math.max(minHeight, startHeight + offsetY);
+                        break;
+                }
+                
+                resizeTarget.style.width = `${newWidth}px`;
+                resizeTarget.style.height = `${newHeight}px`;
+                resizeTarget.style.left = `${newLeft}px`;
+                resizeTarget.style.top = `${newTop}px`;
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            // 触摸缩放中
+            function resizeTouch(event) {
+                if (!isResizing
