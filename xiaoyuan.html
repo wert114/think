@@ -19,14 +19,14 @@
             
             /* 主题色变量 - 默认蓝色 */
             --theme-color: #0277bd;          /* 主主题色 */
-            --theme-light: #e3f2fd;          /* 主题浅色（弹窗/主界面背景） */
+--theme-light: rgba(227, 242, 253, 0.5); /* 最后一位 0.8 是透明度（0-1 之间） */         /* 主题浅色（弹窗/主界面背景） */
             --theme-opposite: #ff69b4;       /* 主题相反色（选择框） */
         }
         
         /* 粉色主题变量 */
         body.pink-theme {
             --theme-color: #ff69b4;
-            --theme-light: #ffe6f2;
+            --theme-light: rgba(255, 230, 242, 0.5); /* 0.8 可按需调整（0 完全透明，1 不透明） */
             --theme-opposite: #0277bd;
         }
         
@@ -51,48 +51,88 @@
             touch-action: manipulation;
             overflow-x: hidden;
         }
+        /* 新标题栏核心样式 */
+.new-header {
+    width: 100%; /* 布满屏幕宽度 */
+    height: 50px; /* 固定高度 */
+    background-color: rgba(255, 255, 255, 0.3); /* 半透明背景，可调整透明度 */
+    position: fixed; /* 固定在背景图最上方 */
+    top: 0;
+    left: 0;
+    z-index: 999; /* 层级高于所有元素，确保置顶 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 轻微阴影提升质感 */
+    /* 新增：左下角+右下角圆角 */
+    border-bottom-left-radius: 16px; /* 圆角大小，可按需调整（如12px/20px） */
+    border-bottom-right-radius: 16px;
+}
+
+/* 标题栏内容居中（可选，根据需求调整） */
+.new-header-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding-left: 20px; /* 左内边距，避免贴左 */
+    padding-right: 120px; /* 右内边距，避开右上角两个按钮（足够容纳按钮+间距） */
+    box-sizing: border-box; /* 确保内边距不撑大容器 */
+}
+
+/* 文字缩小样式保持不变 */
+.new-header-title {
+    font-size: 18px;
+    color: var(--theme-color);
+    white-space: nowrap; /* 可选：防止文字换行 */
+    overflow: hidden; /* 可选：文字过长时隐藏超出部分 */
+    text-overflow: ellipsis; /* 可选：文字过长时显示省略号 */
+}
+
+/* 标题栏logo样式（可选） */
+.new-header-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 标题栏文字样式（可选） */
+.new-header-title {
+    font-size: 18px;
+    color: var(--theme-color); /* 沿用主题色，与网站风格统一 */
+   
+}
+
+/* 深色模式下的新标题栏样式（同步适配） */
+body.dark-mode .new-header {
+    background-color: rgba(31, 41, 55, 0.3); /* 深色模式半透明背景 */
+}
+
+body.dark-mode .new-header-title {
+    color: #f3f4f6; /* 深色模式文字色 */
+}
+
+
+/* 调整右上角按钮位置，避免与标题栏重叠 */
+.top-right-buttons {
+    top: 35px; /* 从20px改为35px，与标题栏垂直居中对齐 */
+}
         /* 主界面容器背景 - 使用当前主题浅色 */
         .container {
             width: 100%;
-            max-width: 400px;
-            background-color: var(--theme-light); /* 主界面背景主题化 */
-            border-radius: 32px;
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 100; /* 主界面层级低于弹窗但可交互 */
-            margin: 0 auto 40px;
-            position: relative;
+    max-width: 400px;
+    background-color: var(--theme-light);
+    border-radius: 32px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
+    margin: 80px auto 40px; /* 关键：上边距80px（标题栏高度50px+30px间距），避免遮挡 */
+    position: relative;
         }
-        .header {
-            background-color: #f8f9fa;
-            width: 100%;
-            padding: 8px 16px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-radius: 16px;
-            margin-bottom: 20px;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-        }
-        .header-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 8px;
-            object-fit: cover;
-            background-color: var(--img-placeholder-bg); /* 图片占位 */
-        }
-        .header-text {
-            font-size: 16px;
-            font-weight: 500;
-        }
+        
         /* 新增右上角按钮样式 */
         .top-right-buttons {
             position: fixed;
@@ -106,7 +146,7 @@
             width: 36px;
             height: 36px;
             border: none;
-            background: white;
+            background: rgba(255, 255, 255, 0.2); /* ，可按需改 */;
             border-radius: 8px;
             padding: 6px;
             cursor: pointer;
@@ -139,9 +179,10 @@
             background-color: var(--img-placeholder-bg); /* 图片占位 */
         }
         .profile-name {
-            font-size: 20px;
-            color: var(--theme-color); /* 用户名使用主题色 */
-            margin-bottom: 4px;
+           font-size: 20px;
+    color: var(--theme-color);
+    margin-bottom: 4px;
+text-shadow: 1px 1px 5px rgba(225, 225, 225, 1);
         }
         .profile-english-name {
             font-size: 10px;
@@ -149,7 +190,7 @@
             margin-bottom: 16px;
         }
         .button-container {
-            background-color: #fff;
+        background-color: rgba(255, 255, 255, 0.2); /* 可按需改数值 */
             padding: 16px;
             border-radius: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -189,7 +230,7 @@
             background-color: #e65c9a; /* 粉色主题hover加深 */
         }
         .btn-white {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.8); /* 80% 不透明度（半透明效果） */
             color: #212121;
             border: 1px solid #e0e0e0;
         }
@@ -214,6 +255,7 @@
         @media (max-width: 375px) {
             .container {
                 max-width: 95%;
+        margin: 70px auto 30px; /* 移动端适当减少间距，保持协调 */
             }
             .button-container {
                 max-width: 240px;
@@ -271,7 +313,7 @@
             visibility: visible;
         }
         .social-panel, .resource-panel, .contact-panel, .fun-panel, .setting-panel, .blank-popup-panel {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.8); /* 80% 不透明度（半透明效果） */
             border: 1px solid #ccc;
             border-radius: 16px;
             width: var(--popup-default-width);
@@ -358,7 +400,7 @@
         /* 标题栏样式 */
         .panel-header {
             padding: 8px 16px;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.8); /* 不透明度 */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -401,8 +443,8 @@
         .panel-content-wrapper {
             position: relative;
             width: 100%;
-            height: calc(100% - 40px);
-            overflow: auto;
+            height: calc(100% - 30px);
+            overflow: auto;overflow-x: hidden; /* 禁止水平滚动（左右滑） */
         }
         .panel-content-wrapper::-webkit-scrollbar {
             width: 0;
@@ -588,20 +630,15 @@
         }
         /* 深色模式 */
         body.dark-mode {
-            background-color: rgba(17, 24, 39, 0.95);
-            color: #f3f4f6;
+            background-color: rgba(17, 24, 39, 0.5);
+            color: #fafafa;
         }
         body.dark-mode .container {
-            background-color: rgba(31, 41, 55, 0.9);
+            background-color: rgba(31, 41, 55, 0.5);
         }
-        body.dark-mode .header {
-            background-color: #1f2937;
-        }
-        body.dark-mode .header-text {
-            color: #f3f4f6;
-        }
+        
         body.dark-mode .button-container {
-            background-color: #374151;
+            background-color: rgba(55, 65, 81, 0.4); /* 70% 不透明度（半透明效果） */
         }
         body.dark-mode .btn-white {
             background-color: #4b5563;
@@ -614,10 +651,10 @@
         body.dark-mode .panel-content,
         body.dark-mode .blank-popup-content,
         body.dark-mode .setting-content {
-            background-color: #374151;
+            background-color: rgba(55, 65, 81, 0.8); /*  不透明度（半透明效果） */
         }
         body.dark-mode .panel-header {
-            background-color: #1f2937;
+            background-color: rgba(31, 41, 55, 0.5); /*  不透明度 */
             border-bottom-color: #374151;
         }
         body.dark-mode .panel-title {
@@ -636,7 +673,7 @@
         }
         body.dark-mode .social-id,
         body.dark-mode .profile-english-name {
-            color: #d1d5db;
+            color: #fff;
         }
         body.dark-mode .arrow-right::before {
             border-top-color: #d1d5db;
@@ -651,7 +688,7 @@
             background-color: #6b7280;
         }
         body.dark-mode .top-btn {
-            background-color: #374151;
+            background-color: rgba(55, 65, 81, 0.2); /*  不透明度（半透明效果） */
         }
         /* 开关样式 */
         .toggle-switch {
@@ -683,7 +720,7 @@
             width: 18px;
             left: 3px;
             bottom: 3px;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.8); /* 80% 不透明度（半透明效果） */
             transition: .3s;
             border-radius: 50%;
         }
@@ -721,6 +758,21 @@
     </style>
 </head>
 <body>
+<body>
+    <!-- 新标题栏（布满屏幕+高度100px） -->
+    <div class="new-header">
+        <!-- 可自定义标题栏内容，比如网站名称、logo等，示例如下 -->
+        <div class="new-header-content">
+            <img src="icon.png" alt="网站logo" class="new-header-logo">
+            <div class="new-header-title">Xiaoyuan exclusive website. Xiaoyuan Nb </div>
+        </div>
+    </div>
+
+    <!-- 原来的欢迎通知、音频播放等代码保留 -->
+    <div id="welcomeNotification">欢迎</div>
+    <audio id="backgroundMusic" src="Music.mp3" loop>...</audio>
+    <!-- 其他原有代码... -->
+</body>
     <!-- 欢迎通知 -->
     <div id="welcomeNotification">欢迎</div>
     
@@ -740,13 +792,7 @@
     </div>
     
     <div class="container">
-        <div class="header">
-            <div class="header-left">
-                <img src="icon.png" alt="网站图标" class="header-icon">
-                <div class="header-text">小源的网站</div>
-            </div>
-            <!-- 已删除原标题栏右侧按钮 -->
-        </div>
+        
         <div class="profile">
             <img src="touxiang.png" alt="小源的头像" class="profile-avatar">
             <div class="profile-name">小源呀</div>
@@ -754,8 +800,7 @@
             <div class="button-container">
                 <button class="btn btn-blue" data-type="social">社交平台</button>
                 <button class="btn btn-blue" data-type="resource">分享资源</button>
-                <button class="btn btn-blue" data-type="fun">好玩的</button>
-                <button class="btn btn-white" data-type="contact">联系方式</button>
+                <button class="btn btn-white" data-type="fun">好玩的</button>
             </div>
         </div>
     </div>
@@ -849,6 +894,11 @@
                         <div class="fun-name">无限弹窗</div>
                         <div class="arrow-right"></div>
                     </div>
+                    <div class="resource-item" onclick="openResourceLink('https://wer11145.github.io/think/')">
+                        <img src="ic0002.png" alt="其它图片" class="resource-icon">
+                        <div class="resource-name">外部链接</div>
+                        <div class="arrow-right"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -866,14 +916,24 @@
             <div class="window-resize-edge corner-br" onmousedown="startResize(event, this.parentElement, 'corner-br')" ontouchstart="startResizeTouch(event, this.parentElement, 'corner-br')"></div>
             
             <div class="panel-header" onmousedown="startDrag(event, this.parentElement)" ontouchstart="startDragTouch(event, this.parentElement)">
-                <div class="panel-title">联系方式</div>
+                <div class="panel-title">关于网站</div>
                 <div class="close-btn" onclick="hidePanel(this.closest('.contact-detail'))"></div>
             </div>
             <div class="panel-content-wrapper">
+             
                 <div class="panel-content">
-                    <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过邮箱: x114514-9178@outlook.com 联系</p>
-                </div>
-            </div>
+    <div style="text-align: center">
+        <img src="ic0003.png" alt="图标" style="width: 65%; height: 40%;  margin-bottom: 8px; object-fit: cover;">
+        <p style="font-size: 18px; color: var(--theme-color); font-weight: 600; margin: 0;">Xiaoyuan exclusive website</p>
+        <p style="font-size: 18px; color: var(--theme-color); font-weight: 600; margin: 0;">v1.3.0.0.5 beta </p>
+    </div>
+    <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">通过电子邮箱:x114514-9178@outlook.com联系我</p>
+    <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">Contact me via e-mail: x114514-9178@outlook.com</p>
+
+    <p style="text-align: center; font-size: 16px; margin: 0; padding: 8px 0;">大鲍鱼™</p>
+</div>
+              </div>
+            
         </div>
     </div>
     <!-- 设置弹窗（包含主题切换） -->
@@ -924,10 +984,15 @@
                         <span class="setting-label">关闭所有窗口</span>
                         <div class="arrow-right"></div>
                     </div>
+                   <div class="setting-item" onclick="openPanel('contact')">
+    <span class="setting-label">关于网站</span>
+    <div class="arrow-right"></div>
+</div>
                 </div>
             </div>
         </div>
     </div>
+ 
     <script>
         // 基础变量
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -1316,7 +1381,7 @@
                 return '错误';
             }
         }
-        
+
         // 鼠标拖动开始
         function startDrag(event, target) {
             if (event.target.closest('.close-btn') || event.target.closest('.popup-btn') || isResizing) return;
