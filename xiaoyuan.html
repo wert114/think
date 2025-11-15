@@ -10,11 +10,11 @@
     <style>
         /* 全局变量定义 - 统一控制主题色和宽高 */
         :root {
-            --popup-default-width: 320px;    /* 弹窗默认宽度 */
-            --popup-default-height: 200px;   /* 弹窗默认高度 */
+            --popup-default-width: 350px;    /* 弹窗默认宽度 */
+            --popup-default-height: 230px;   /* 弹窗默认高度 */
             --popup-min-width: 100px;        /* 弹窗最小宽度 */
             --popup-min-height: 60px;       /* 弹窗最小高度 */
-            --resize-edge-size: 10px;        /* 缩放热区尺寸 */
+            --resize-edge-size: 1px;        /* 缩放热区尺寸 */
             --img-placeholder-bg: #e3f2fd;   /* 图片加载占位背景色 */
             
             /* 主题色变量 - 默认蓝色 */
@@ -211,6 +211,7 @@ text-shadow: 1px 1px 5px rgba(225, 225, 225, 1);
             transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
             outline: none;
             z-index: 110; /* 按钮层级高于主容器 */
+            font-family: 'Minecraft', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         .btn:active {
             transform: translateY(-3px);
@@ -798,9 +799,9 @@ text-shadow: 1px 1px 5px rgba(225, 225, 225, 1);
             <div class="profile-name">小源呀</div>
             <div class="profile-english-name">Xiaoyuan</div>
             <div class="button-container">
-                <button class="btn btn-blue" data-type="social">社交平台</button>
-                <button class="btn btn-blue" data-type="resource">分享资源</button>
-                <button class="btn btn-white" data-type="fun">好玩的</button>
+                <button class="btn btn-blue" data-type="social">My Social Platform</button>
+                <button class="btn btn-blue" data-type="resource">Share resources</button>
+                <button class="btn btn-white" data-type="fun">Small games</button>
             </div>
         </div>
     </div>
